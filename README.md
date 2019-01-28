@@ -1,28 +1,30 @@
 # OpenCars
 
-:ukraine:
-
 ## Overview
 
 RESTful API with information about transport just using Ukrainian License Plate.
 
-### Server
+## Server
 
-Download PostgreSQL dump before starting the server
-
-**WARNING:** This file is pretty big (2.9 *GB*)
+Download PostgreSQL dump before starting the server. **NOTE:** This file is pretty big (2.9 *GB*)
 
 ```sh
 $ gsutil cp gs://opencars/cars.sql
 ```
 
+Import database to PostgreSQL
+
+```sh
+$ cat cars.sql | psql -U postgres
+```
+
+Run the server
+
 ```sh
 $ go run cmd/opencars/main.go
 ```
 
-```
-=> Listening port 8080
-```
+## API
 
 ```sh
 $ http localhost:8080/transport?number="BA2927BT"
@@ -49,7 +51,9 @@ $ http localhost:8080/transport?number="BA2927BT"
 ]
 ```
 
-### Parser
+For more information see [documentation](./docs).
+
+## Parser
 
 Parse CSV files from `data.gov.ua` into one SQL dump.
 
@@ -57,7 +61,7 @@ Parse CSV files from `data.gov.ua` into one SQL dump.
 $ go run cmd/parser/main.go -path=<PATH> # Path to CSV file
 ```
 
-### Data
+## Data
 
 All information was taken from official Ukrainian resource https://data.gov.ua
 
