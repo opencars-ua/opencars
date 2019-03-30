@@ -6,12 +6,12 @@ import (
 )
 
 type TransportData struct {
-	ID     int  `json:"id"`
+	ID     int    `json:"id"`
 	Number string `json:"number"`
 }
 
 type TransportResponse struct {
-	Count int `json:"count"`
+	Count int             `json:"count"`
 	Data  []TransportData `json:"data"`
 }
 

@@ -10,9 +10,8 @@ import (
 	"time"
 
 	"github.com/go-pg/pg"
-	"github.com/shal/opencars/internal/database"
-	"github.com/shal/opencars/pkg/models"
-
+	"github.com/opencars-ua/opencars/internal/sql"
+	"github.com/opencars-ua/opencars/pkg/models"
 )
 
 type HandlerCSV struct {
@@ -64,7 +63,7 @@ func Run() {
 	csvReader.Comma = ';'
 	createdCars := 0
 
-	db := database.Must(database.DB())
+	db := sql.Must(sql.DB())
 	defer db.Close()
 
 	// Skip header line.

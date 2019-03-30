@@ -1,6 +1,6 @@
 package main
 
-import "github.com/shal/opencars/internal/parser"
+import "github.com/opencars-ua/opencars/internal/parser"
 
 func main() {
 	parser.Run()
