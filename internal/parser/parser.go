@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -67,7 +68,9 @@ func Run() {
 	defer db.Close()
 
 	// Skip header line.
-	csvReader.Read()
+	if _, err := csvReader.Read(); err != nil {
+		log.Println(err.Error())
+	}
 
 	handler := HandlerCSV{
 		db:     db,

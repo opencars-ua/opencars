@@ -36,7 +36,7 @@ func RuneToUA(char rune) rune {
 func ToUA(lexeme string) string {
 	chars := make([]rune, 0)
 
-	for _, v := range []rune(lexeme) {
+	for _, v := range lexeme {
 		chars = append(chars, RuneToUA(v))
 	}
 

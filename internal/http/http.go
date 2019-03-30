@@ -12,8 +12,8 @@ import (
 )
 
 var (
-	DB Database
- 	json = jsoniter.ConfigFastest
+	DB   Database
+	json = jsoniter.ConfigFastest
 )
 
 // Database interface makes handler testable.
@@ -38,9 +38,13 @@ func Handler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if res, err := strconv.Atoi(limit); err != nil {
-		DB.SelectWhere(&cars, res, "number LIKE ?", number)
+		if err := DB.SelectWhere(&cars, res, "number LIKE ?", number); err != nil {
+			http.Error(w, "", http.StatusInternalServerError)
+		}
 	} else {
-		DB.SelectWhere(&cars, 1, "number LIKE ?", number)
+		if err := DB.SelectWhere(&cars, 1, "number LIKE ?", number); err != nil {
+			http.Error(w, "", http.StatusInternalServerError)
+		}
 	}
 
 	if err := json.NewEncoder(w).Encode(cars); err != nil {
@@ -56,7 +60,7 @@ func Run() {
 
 	fmt.Println("Listening port 8080")
 
-	if err := http.ListenAndServe("8080", http.DefaultServeMux); err != nil {
+	if err := http.ListenAndServe(":8080", http.DefaultServeMux); err != nil {
 		panic(err.Error())
 	}
 }
