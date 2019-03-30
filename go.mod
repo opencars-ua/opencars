@@ -1,4 +1,4 @@
-module github.com/shal/opencars
+module github.com/opencars-ua/opencars
 
 require (
 	github.com/go-pg/pg v7.1.7+incompatible
@@ -9,7 +9,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/onsi/ginkgo v1.7.0 // indirect
 	github.com/onsi/gomega v1.4.3 // indirect
-	github.com/stretchr/testify v1.3.0
+	github.com/stretchr/testify v1.3.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	mellium.im/sasl v0.2.1 // indirect
 )

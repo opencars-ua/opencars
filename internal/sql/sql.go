@@ -1,12 +1,13 @@
-package database
+package sql
 
 import (
 	"fmt"
-	"github.com/go-pg/pg"
-	"github.com/go-pg/pg/orm"
-	"github.com/shal/opencars/pkg/models"
 	"os"
 	"strings"
+
+	"github.com/go-pg/pg"
+	"github.com/go-pg/pg/orm"
+	"github.com/opencars-ua/opencars/pkg/models"
 )
 
 func CreateSchema(db *pg.DB) error {
