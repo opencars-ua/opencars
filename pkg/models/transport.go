@@ -2,19 +2,9 @@ package models
 
 import (
 	"strconv"
-	"strings"
 )
 
-type TransportData struct {
-	ID     int    `json:"id"`
-	Number string `json:"number"`
-}
-
-type TransportResponse struct {
-	Count int             `json:"count"`
-	Data  []TransportData `json:"data"`
-}
-
+// Transport represents SQL table and JSON object.
 type Transport struct {
 	ID                  int    `json:"id" sql:"id,pk"`
 	Person              string `json:"-" sql:"person"`
@@ -38,10 +28,21 @@ type Transport struct {
 	Number              string `json:"number" sql:"number,notnull"`
 }
 
+// Valid checks whatever transport number valid or not.
 func (transport Transport) Valid() (matched bool) {
 	return transport.Number != "NULL"
 }
 
+// TrimNull returns empty string in case of NULL.
+func TrimNull(s string) string {
+	if s == "NULL" {
+		return ""
+	}
+
+	return s
+}
+
+// NewTransportFromCSV parses CSV line into transport structure.
 func NewTransportFromCSV(record []string) *Transport {
 	transport := new(Transport)
 
@@ -51,19 +52,19 @@ func NewTransportFromCSV(record []string) *Transport {
 	transport.Registration = record[3]
 	transport.Date = record[4]
 	transport.DepCode, _ = strconv.Atoi(record[5])
-	transport.Dep = strings.Trim(record[6], "NULL")
-	transport.Brand = strings.Trim(record[7], "NULL")
-	transport.Model = strings.Trim(record[8], "NULL")
+	transport.Dep = TrimNull(record[6])
+	transport.Brand = TrimNull(record[7])
+	transport.Model = TrimNull(record[8])
 	transport.Year, _ = strconv.Atoi(record[9])
-	transport.Color = strings.Trim(record[10], "NULL")
-	transport.Kind = strings.Trim(record[11], "NULL")
-	transport.Body = strings.Trim(record[12], "NULL")
-	transport.Purpose = strings.Trim(record[13], "NULL")
-	transport.Fuel = strings.Trim(record[14], "NULL")
+	transport.Color = TrimNull(record[9])
+	transport.Kind = TrimNull(record[11])
+	transport.Body = TrimNull(record[12])
+	transport.Purpose = TrimNull(record[13])
+	transport.Fuel = TrimNull(record[14])
 	transport.Capacity, _ = strconv.Atoi(record[15])
 	transport.OwnWeight, _ = strconv.Atoi(record[16])
 	transport.TotalWeight, _ = strconv.Atoi(record[17])
-	transport.Number = strings.Trim(record[18], "NULL")
+	transport.Number = TrimNull(record[18])
 
 	return transport
 }
