@@ -41,7 +41,7 @@ func main() {
 	}
 
 	info := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s",
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, database,
 	)
 
