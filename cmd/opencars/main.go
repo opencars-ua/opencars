@@ -24,7 +24,7 @@ func (r *RealDB) Select(
 	query := "SELECT * FROM transports WHERE " + condition + " LIMIT " + strconv.Itoa(limit)
 	log.Printf("DB: %s\n", query)
 
-	return r.DB.Select(model, query)
+	return r.DB.Select(model, query, params...)
 }
 
 func main() {
