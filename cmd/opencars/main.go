@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 
@@ -21,6 +22,7 @@ func (r *RealDB) Select(
 	params ...interface{},
 ) error {
 	query := "SELECT * FROM transports WHERE " + condition + " LIMIT " + strconv.Itoa(limit)
+	log.Printf("DB: %s\n", query)
 
 	return r.DB.Select(model, query)
 }
