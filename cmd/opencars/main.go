@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -21,7 +20,7 @@ func (r *RealDB) Select(
 	condition string,
 	params ...interface{},
 ) error {
-	query := "SELECT * FROM transports WHERE " + condition + " LIMIT " + strconv.Itoa(limit)
+	query := "SELECT * FROM transports WHERE " + condition
 	log.Printf("DB: %s\n", query)
 
 	return r.DB.Select(model, query, params...)
