@@ -18,7 +18,7 @@ var (
 
 // Database interface makes handler testable.
 type Database interface {
-	SelectWhere(
+	Select(
 		model interface{},
 		limit int,
 		condition string,
@@ -38,11 +38,11 @@ func Handler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if res, err := strconv.Atoi(limit); err != nil {
-		if err := DB.SelectWhere(&cars, res, "number LIKE ?", number); err != nil {
+		if err := DB.Select(&cars, res, "number LIKE ?", number); err != nil {
 			http.Error(w, "", http.StatusInternalServerError)
 		}
 	} else {
-		if err := DB.SelectWhere(&cars, 1, "number LIKE ?", number); err != nil {
+		if err := DB.Select(&cars, 1, "number LIKE ?", number); err != nil {
 			http.Error(w, "", http.StatusInternalServerError)
 		}
 	}
