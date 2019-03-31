@@ -20,7 +20,7 @@ func (r *RealDB) Select(
 	condition string,
 	params ...interface{},
 ) error {
-	query := "SELECT * FROM transport " + condition + " LIMIT " + strconv.Itoa(limit)
+	query := "SELECT * FROM transport WHERE " + condition + " LIMIT " + strconv.Itoa(limit)
 
 	return r.DB.Select(model, query)
 }
