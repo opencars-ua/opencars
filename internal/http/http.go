@@ -2,6 +2,7 @@ package http
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -39,15 +40,18 @@ func Handler(w http.ResponseWriter, req *http.Request) {
 
 	if res, err := strconv.Atoi(limit); err != nil {
 		if err := DB.Select(&cars, res, "number LIKE ?", number); err != nil {
+			log.Println(err)
 			http.Error(w, "", http.StatusInternalServerError)
 		}
 	} else {
 		if err := DB.Select(&cars, 1, "number LIKE ?", number); err != nil {
+			log.Println(err)
 			http.Error(w, "", http.StatusInternalServerError)
 		}
 	}
 
 	if err := json.NewEncoder(w).Encode(cars); err != nil {
+		log.Println(err)
 		http.Error(w, "", http.StatusInternalServerError)
 	}
 
