@@ -1,21 +1,54 @@
 package main
 
 import (
-	"github.com/go-pg/pg"
+	"fmt"
+	"os"
+	"strconv"
+
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 	"github.com/opencars-ua/opencars/internal/http"
-	"github.com/opencars-ua/opencars/internal/sql"
 )
 
 type RealDB struct {
-	*pg.DB
+	*sqlx.DB
 }
 
-func (r *RealDB) SelectWhere(model interface{}, limit int, condition string, params ...interface{}) error {
-	query := r.DB.Model(model).Where(condition, params...)
-	return query.Limit(limit).Select()
+func (r *RealDB) Select(
+	model interface{},
+	limit int,
+	condition string,
+	params ...interface{},
+) error {
+	query := "SELECT * FROM transport " + condition + " LIMIT " + strconv.Itoa(limit)
+
+	return r.DB.Select(model, query)
 }
 
 func main() {
-	http.DB = &RealDB{sql.Must(sql.DB())}
+	host := "localhost"
+	port := "5432"
+	user := "postgres"
+	password := "postgres"
+	database := "opencars"
+
+	if os.Getenv("DATABASE_HOST") != "" {
+		host = os.Getenv("DATABASE_HOST")
+	}
+
+	if os.Getenv("DATABASE_PORT") != "" {
+		port = os.Getenv("DATABASE_PORT")
+	}
+
+	info := fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s",
+		host, port, user, password, database,
+	)
+
+	DB := sqlx.MustConnect("postgres", info)
+	http.DB = &RealDB{DB}
+
 	http.Run()
+
+	defer DB.Close()
 }

@@ -6,9 +6,9 @@ import (
 	"testing"
 )
 
-type Fake struct {}
+type Fake struct{}
 
-func (*Fake) SelectWhere(
+func (*Fake) Select(
 	model interface{},
 	limit int,
 	condition string,
@@ -44,7 +44,6 @@ func TestHandler(t *testing.T) {
 	}
 }
 
-
 func BenchmarkHandler(b *testing.B) {
 	req, err := http.NewRequest(
 		"GET",
@@ -60,7 +59,7 @@ func BenchmarkHandler(b *testing.B) {
 	DB = &Fake{}
 	handler := http.HandlerFunc(Handler)
 
-	for i :=0; i< b.N; i++ {
+	for i := 0; i < b.N; i++ {
 		handler.ServeHTTP(rr, req)
 		if status := rr.Code; status != http.StatusOK {
 			b.Fail()
