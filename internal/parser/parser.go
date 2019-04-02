@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 	"time"
-	
+
 	"github.com/go-pg/pg"
 	"github.com/opencars-ua/opencars/internal/database"
 	"github.com/opencars-ua/opencars/pkg/models"

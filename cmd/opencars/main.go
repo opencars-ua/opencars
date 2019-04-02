@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/jmoiron/sqlx"
@@ -20,9 +19,10 @@ func (r *RealDB) Select(
 	condition string,
 	params ...interface{},
 ) error {
-	query := "SELECT * FROM transports WHERE " + condition
-	log.Printf("DB: %s\n", query)
-
+	query := fmt.Sprintf("SELECT * FROM transports WHERE %s LIMIT %d",
+		condition,
+		limit,
+	)
 	return r.DB.Select(model, query, params...)
 }
 

@@ -31,23 +31,20 @@ func Handler(w http.ResponseWriter, req *http.Request) {
 	// start := time.Now()
 	cars := make([]models.Transport, 0)
 	number := translator.ToUA(req.FormValue("number"))
-	limit := req.FormValue("limit")
+	limit := 1
 
 	if strings.TrimSpace(number) == "" {
 		http.Error(w, "number is empty", http.StatusBadRequest)
 		return
 	}
 
-	if res, err := strconv.Atoi(limit); err != nil {
-		if err := DB.Select(&cars, res, "number LIKE ?", number); err != nil {
-			log.Println(err)
-			http.Error(w, "", http.StatusInternalServerError)
-		}
-	} else {
-		if err := DB.Select(&cars, 1, "number LIKE ?", number); err != nil {
-			log.Println(err)
-			http.Error(w, "", http.StatusInternalServerError)
-		}
+	if tmp, err := strconv.Atoi(req.FormValue("limit")); err == nil {
+		limit = tmp
+	}
+
+	if err := DB.Select(&cars, limit, "number = $1", number); err != nil {
+		log.Println(err)
+		http.Error(w, "", http.StatusInternalServerError)
 	}
 
 	if err := json.NewEncoder(w).Encode(cars); err != nil {

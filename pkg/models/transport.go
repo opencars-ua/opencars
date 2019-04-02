@@ -6,26 +6,26 @@ import (
 
 // Transport represents SQL table and JSON object.
 type Transport struct {
-	ID                  int    `json:"id" database:"id,pk"`
-	Person              string `json:"-" database:"person"`
-	RegistrationAddress string `json:"registration_address" database:"registration_address"`
-	RegistrationCode    int    `json:"registration_code" database:"registration_code"`
-	Registration        string `json:"registration" database:"registration"`
-	Date                string `json:"date" database:"date"`
-	DepCode             int    `json:"-" database:"dep_code"`
-	Dep                 string `json:"-" database:"dep"`
-	Brand               string `json:"model" database:"brand"`
-	Model               string `json:"-" database:"model"`
-	Year                int    `json:"year" database:"year"`
-	Color               string `json:"color" database:"color"`
-	Kind                string `json:"kind" database:"kind"`
-	Body                string `json:"body" database:"body"`
-	Purpose             string `json:"-" database:"purpose"`
-	Fuel                string `json:"fuel" database:"fuel"`
-	Capacity            int    `json:"capacity" database:"capacity"`
-	OwnWeight           int    `json:"own_weight" database:"own_weight"`
-	TotalWeight         int    `json:"-" database:"total_weight"`
-	Number              string `json:"number" database:"number,notnull"`
+	ID                  int    `json:"id" db:"id,pk"`
+	Person              string `json:"-" db:"person"`
+	RegistrationAddress string `json:"registration_address" db:"registration_address"`
+	RegistrationCode    int    `json:"registration_code" db:"registration_code"`
+	Registration        string `json:"registration" db:"registration"`
+	Date                string `json:"date" db:"date"`
+	DepCode             int    `json:"-" db:"dep_code"`
+	Dep                 string `json:"-" db:"dep"`
+	Brand               string `json:"model" db:"brand"`
+	Model               string `json:"-" db:"model"`
+	Year                int    `json:"year" db:"year"`
+	Color               string `json:"color" db:"color"`
+	Kind                string `json:"kind" db:"kind"`
+	Body                string `json:"body" db:"body"`
+	Purpose             string `json:"-" db:"purpose"`
+	Fuel                string `json:"fuel" db:"fuel"`
+	Capacity            int    `json:"capacity" db:"capacity"`
+	OwnWeight           int    `json:"own_weight" db:"own_weight"`
+	TotalWeight         int    `json:"-" db:"total_weight"`
+	Number              string `json:"number" db:"number,notnull"`
 }
 
 // Valid checks whatever transport number valid or not.
