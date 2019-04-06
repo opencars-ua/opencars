@@ -3,7 +3,6 @@ package database
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
@@ -33,15 +32,12 @@ func CreateSchema(db *pg.DB) error {
 func DB() (*pg.DB, error) {
 	host := "localhost"
 	port := "5432"
-	user := "postgres"
-	password := "postgres"
-	database := "opencars"
 
-	if len(strings.TrimSpace(os.Getenv("DATABASE_HOST"))) != 0 {
+	if os.Getenv("DATABASE_HOST") != "" {
 		host = os.Getenv("DATABASE_HOST")
 	}
 
-	if len(strings.TrimSpace(os.Getenv("DATABASE_PORT"))) != 0 {
+	if os.Getenv("DATABASE_PORT") != "" {
 		port = os.Getenv("DATABASE_PORT")
 	}
 
@@ -49,9 +45,9 @@ func DB() (*pg.DB, error) {
 
 	db := pg.Connect(&pg.Options{
 		Addr:     fmt.Sprintf("%s:%s", host, port),
-		User:     user,
-		Password: password,
-		Database: database,
+		User:     "postgres",
+		Password: "postgres",
+		Database: "opencars",
 	})
 
 	err := CreateSchema(db)
