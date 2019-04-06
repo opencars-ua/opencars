@@ -1,52 +1,31 @@
 package translator
 
-import "testing"
+import (
+	"math/rand"
+	"strconv"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 func TestRuneToUA(t *testing.T) {
-	if 'А' != RuneToUA('A') {
-		t.Fail()
-	}
-
-	if 'В' != RuneToUA('B') {
-		t.Fail()
-	}
-
-	if 'С' != RuneToUA('C') {
-		t.Fail()
-	}
-
-	if 'Z' != RuneToUA('Z') {
-		t.Fail()
-	}
-
-	if '1' != RuneToUA('1') {
-		t.Fail()
-	}
+	assert.Equal(t, 'А', RuneToUA('A'))
+	assert.Equal(t, 'В', RuneToUA('B'))
+	assert.Equal(t, 'С', RuneToUA('C'))
+	assert.Equal(t, 'Z', RuneToUA('Z'))
+	assert.Equal(t, '1', RuneToUA('1'))
 }
 
 func TestToUA(t *testing.T) {
 	t.Run("simple strings", func(t *testing.T) {
-		if "АВС" != ToUA("ABC") {
-			t.Fail()
-		}
-
-		if "АА0000АА" != ToUA("AA0000AA") {
-			t.Fail()
-		}
+		assert.Equal(t, "АВС", ToUA("ABC"))
+		assert.Equal(t, "АА0000АА", ToUA("AA0000AA"))
 	})
 
 	t.Run("without latin", func(t *testing.T) {
-		if "АБВ" != ToUA("АБВ") {
-			t.Fail()
-		}
-
-		if "123456789" != ToUA("123456789") {
-			t.Fail()
-		}
-
-		if "АХ1234ВА" != ToUA("АХ1234ВА") {
-			t.Fail()
-		}
+		assert.Equal(t, "АБВ", "АБВ")
+		assert.Equal(t, "123456789", "123456789")
+		assert.Equal(t, "АХ1234ВА", "АХ1234ВА")
 	})
 
 	t.Run("latin to cyrillic for each region", func(t *testing.T) {
@@ -63,23 +42,36 @@ func TestToUA(t *testing.T) {
 		}
 
 		for i := range fixtures {
-			done := ToUA(fixtures[i])
-
-			if expected[i] != ToUA(fixtures[i]) {
-				t.Errorf("%s not equal %s", expected, done)
-			}
+			assert.Equal(t, expected[i], ToUA(fixtures[i]))
 		}
 	})
 }
 
 func BenchmarkToUA(b *testing.B) {
-	for n := 0; n < b.N; n++ {
-		ToUA("AA1728BP")
+	fixtures := make([]string, b.N)
+
+	for i := 0; i < b.N; i++ {
+		fixtures[i] = strconv.Itoa(1000 + rand.Int() % 8999)
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		ToUA("AA" + fixtures[i] + "BP")
 	}
 }
 
 func BenchmarkRuneToUA(b *testing.B) {
-	for n := 0; n < b.N; n++ {
-		RuneToUA('C')
+	fixtures := make([]rune, b.N)
+
+	for i := 0; i < b.N; i++ {
+		fixtures[i] = rune('A' + rand.Int()%'Z')
+	}
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		RuneToUA(fixtures[i])
 	}
 }
