@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/opencars-ua/opencars.svg?style=svg)](https://circleci.com/gh/opencars-ua/opencars)
+
 # OpenCars
 
 ## Overview
