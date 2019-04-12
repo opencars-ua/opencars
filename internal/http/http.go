@@ -42,7 +42,7 @@ func Handler(w http.ResponseWriter, req *http.Request) {
 		limit = tmp
 	}
 
-	if err := DB.Select(&cars, limit, "number = $1", number); err != nil {
+	if err := DB.Select(&cars, limit, "number = ?", number); err != nil {
 		log.Println(err)
 		http.Error(w, "", http.StatusInternalServerError)
 	}

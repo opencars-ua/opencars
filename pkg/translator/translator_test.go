@@ -51,7 +51,7 @@ func BenchmarkToUA(b *testing.B) {
 	fixtures := make([]string, b.N)
 
 	for i := 0; i < b.N; i++ {
-		fixtures[i] = strconv.Itoa(1000 + rand.Int() % 8999)
+		fixtures[i] = strconv.Itoa(1000 + rand.Int()%8999)
 	}
 
 	b.ResetTimer()
