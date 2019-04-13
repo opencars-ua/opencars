@@ -8,26 +8,19 @@ import (
 	"strings"
 
 	"github.com/json-iterator/go"
+
+	"github.com/opencars-ua/opencars/internal/database"
 	"github.com/opencars-ua/opencars/pkg/models"
 	"github.com/opencars-ua/opencars/pkg/translator"
 )
 
 var (
-	DB   Database
+	// DB is an instance of Database Interface.
+	DB   database.Adapter
 	json = jsoniter.ConfigFastest
 )
 
-// Database interface makes handler testable.
-type Database interface {
-	Select(
-		model interface{},
-		limit int,
-		condition string,
-		params ...interface{},
-	) error
-}
-
-func Handler(w http.ResponseWriter, req *http.Request) {
+func Transport(w http.ResponseWriter, req *http.Request) {
 	// start := time.Now()
 	cars := make([]models.Transport, 0)
 	number := translator.ToUA(req.FormValue("number"))
@@ -56,8 +49,17 @@ func Handler(w http.ResponseWriter, req *http.Request) {
 	// fmt.Printf("Execution time: %s\n", time.Since(start))
 }
 
+// HealthHandler is a net/http handler for health checks.
+func Health(w http.ResponseWriter, _ *http.Request) {
+	if DB.Healthy() {
+		msg := "database is not healthy"
+		http.Error(w, msg, http.StatusServiceUnavailable)
+	}
+}
+
 func Run() {
-	http.HandleFunc("/transport", Handler)
+	http.HandleFunc("/transport", Transport)
+	http.HandleFunc("/health", Health)
 
 	fmt.Println("Listening port 8080")
 

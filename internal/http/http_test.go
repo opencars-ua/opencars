@@ -6,15 +6,19 @@ import (
 	"testing"
 )
 
-type Fake struct{}
+type TestAdapter struct{}
 
-func (*Fake) Select(
+func (*TestAdapter) Select(
 	model interface{},
 	limit int,
 	condition string,
 	params ...interface{},
 ) error {
 	return nil
+}
+
+func (*TestAdapter) Healthy() bool {
+	return true
 }
 
 func TestHandler(t *testing.T) {
@@ -29,8 +33,8 @@ func TestHandler(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	DB = &Fake{}
-	handler := http.HandlerFunc(Handler)
+	DB = &TestAdapter{}
+	handler := http.HandlerFunc(Transport)
 	handler.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
@@ -56,8 +60,8 @@ func BenchmarkHandler(b *testing.B) {
 	}
 
 	rr := httptest.NewRecorder()
-	DB = &Fake{}
-	handler := http.HandlerFunc(Handler)
+	DB = &TestAdapter{}
+	handler := http.HandlerFunc(Transport)
 
 	for i := 0; i < b.N; i++ {
 		handler.ServeHTTP(rr, req)

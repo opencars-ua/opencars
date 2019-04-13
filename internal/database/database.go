@@ -9,6 +9,17 @@ import (
 	"github.com/opencars-ua/opencars/pkg/models"
 )
 
+// Database interface makes handler testable.
+type Adapter interface {
+	Healthy() bool
+	Select(
+		model interface{},
+		limit int,
+		condition string,
+		params ...interface{},
+	) error
+}
+
 func CreateSchema(db *pg.DB) error {
 	err := db.CreateTable((*models.Transport)(nil), &orm.CreateTableOptions{
 		IfNotExists: true,
