@@ -18,6 +18,8 @@ RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o /go/bin/server ./cmd/openc
 
 FROM alpine
 
+RUN apk update && apk upgrade && apk add curl
+
 COPY --from=build /go/bin/server /app/server
 
 WORKDIR /app
