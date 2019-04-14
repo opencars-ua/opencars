@@ -1,5 +1,5 @@
-[![CircleCI](https://circleci.com/gh/opencars-ua/opencars.svg?style=svg)](https://circleci.com/gh/opencars-ua/opencars)
-[![Go Report Card](https://goreportcard.com/badge/github.com/opencars-ua/opencars)](https://goreportcard.com/report/github.com/opencars-ua/opencars)
+[![CircleCI](https://circleci.com/gh/opencars/opencars.svg?style=svg)](https://circleci.com/gh/opencars/opencars)
+[![Go Report Card](https://goreportcard.com/badge/github.com/opencars/opencars)](https://goreportcard.com/report/github.com/opencars/opencars)
 
 # OpenCars
 

@@ -9,9 +9,9 @@ import (
 
 	"github.com/json-iterator/go"
 
-	"github.com/opencars-ua/opencars/internal/database"
-	"github.com/opencars-ua/opencars/pkg/models"
-	"github.com/opencars-ua/opencars/pkg/translator"
+	"github.com/opencars/opencars/internal/database"
+	"github.com/opencars/opencars/pkg/models"
+	"github.com/opencars/opencars/pkg/translator"
 )
 
 var (

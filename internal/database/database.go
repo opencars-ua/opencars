@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
-	"github.com/opencars-ua/opencars/pkg/models"
+	"github.com/opencars/opencars/pkg/models"
 )
 
 // Database interface makes handler testable.

@@ -4,8 +4,8 @@ import (
 	"log"
 
 	"github.com/go-pg/pg"
-	"github.com/opencars-ua/opencars/internal/database"
-	"github.com/opencars-ua/opencars/internal/http"
+	"github.com/opencars/opencars/internal/database"
+	"github.com/opencars/opencars/internal/http"
 )
 
 // Adapter implements interface Adapter from database	 package.
