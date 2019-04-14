@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/go-pg/pg"
 	"log"
 
+	"github.com/go-pg/pg"
 	"github.com/opencars-ua/opencars/internal/database"
 	"github.com/opencars-ua/opencars/internal/http"
 )
@@ -24,13 +24,13 @@ func (adapter *Adapter) Select(
 	return query.Limit(limit).Select()
 }
 
-// Select returns set of objects searched by SQL SELECT.
+// Healthy performs application health check.
 func (adapter *Adapter) Healthy() bool {
 	_, err := adapter.db.Exec("SELECT 1")
 
 	log.Printf("Database: %v\n", err)
 
-	return err == nil
+	return err != nil
 }
 func main() {
 	sql := database.Must(database.DB())
