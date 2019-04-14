@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/go-pg/pg"
-	"github.com/opencars-ua/opencars/internal/database"
-	"github.com/opencars-ua/opencars/pkg/models"
+	"github.com/opencars/opencars/internal/database"
+	"github.com/opencars/opencars/pkg/models"
 )
 
 type HandlerCSV struct {

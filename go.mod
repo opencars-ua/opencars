@@ -1,4 +1,4 @@
-module github.com/opencars-ua/opencars
+module github.com/opencars/opencars
 
 require (
 	github.com/go-pg/pg v8.0.3+incompatible
