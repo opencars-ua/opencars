@@ -6,7 +6,8 @@ import (
 
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
-	"github.com/opencars/opencars/pkg/models"
+
+	"github.com/opencars/opencars/pkg/model"
 )
 
 // Database interface makes handler testable.
@@ -21,7 +22,7 @@ type Adapter interface {
 }
 
 func CreateSchema(db *pg.DB) error {
-	err := db.CreateTable((*models.Transport)(nil), &orm.CreateTableOptions{
+	err := db.CreateTable((*model.Transport)(nil), &orm.CreateTableOptions{
 		IfNotExists: true,
 	})
 
@@ -29,7 +30,7 @@ func CreateSchema(db *pg.DB) error {
 		return err
 	}
 
-	_, err = db.Model((*models.Transport)(nil)).Exec(
+	_, err = db.Model((*model.Transport)(nil)).Exec(
 		"CREATE INDEX IF NOT EXISTS NUMBERS ON transports USING btree (number)",
 	)
 
@@ -51,8 +52,6 @@ func DB() (*pg.DB, error) {
 	if os.Getenv("DATABASE_PORT") != "" {
 		port = os.Getenv("DATABASE_PORT")
 	}
-
-	fmt.Println(fmt.Sprintf("%s:%s", host, port))
 
 	db := pg.Connect(&pg.Options{
 		Addr:     fmt.Sprintf("%s:%s", host, port),

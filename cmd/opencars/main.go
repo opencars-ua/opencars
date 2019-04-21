@@ -1,8 +1,6 @@
 package main
 
 import (
-	"log"
-
 	"github.com/go-pg/pg"
 	"github.com/opencars/opencars/internal/database"
 	"github.com/opencars/opencars/internal/http"
@@ -11,6 +9,14 @@ import (
 // Adapter implements interface Adapter from database	 package.
 type Adapter struct {
 	db *pg.DB
+}
+
+func NewAdapter(db *pg.DB) *Adapter {
+	adapter := new(Adapter)
+
+	adapter.db = db
+
+	return adapter
 }
 
 // Select returns set of objects searched by SQL SELECT.
@@ -27,16 +33,12 @@ func (adapter *Adapter) Select(
 // Healthy performs application health check.
 func (adapter *Adapter) Healthy() bool {
 	_, err := adapter.db.Exec("SELECT 1")
-
-	log.Printf("Database: %v\n", err)
-
 	return err != nil
 }
+
 func main() {
-	sql := database.Must(database.DB())
+	db := database.Must(database.DB())
 
-	http.DB = &Adapter{sql}
-	http.Run()
-
-	defer sql.Close()
+	http.Storage = NewAdapter(db)
+	http.Run(":8080")
 }
