@@ -1,32 +1,27 @@
 package http
 
 import (
-	"fmt"
+	"github.com/json-iterator/go"
+	"github.com/opencars/opencars/internal/database"
+	"github.com/opencars/opencars/pkg/model"
+	"github.com/opencars/opencars/pkg/translator"
 	"log"
 	"net/http"
 	"strconv"
-	"strings"
-
-	"github.com/json-iterator/go"
-
-	"github.com/opencars/opencars/internal/database"
-	"github.com/opencars/opencars/pkg/models"
-	"github.com/opencars/opencars/pkg/translator"
 )
 
 var (
-	// DB is an instance of Database Interface.
-	DB   database.Adapter
-	json = jsoniter.ConfigFastest
+	// Storage is an instance of Database Interface.
+	Storage database.Adapter
+	json    = jsoniter.ConfigFastest
 )
 
 func Transport(w http.ResponseWriter, req *http.Request) {
-	// start := time.Now()
-	cars := make([]models.Transport, 0)
+	cars := make([]model.Transport, 0)
 	number := translator.ToUA(req.FormValue("number"))
 	limit := 1
 
-	if strings.TrimSpace(number) == "" {
+	if number == "" {
 		http.Error(w, "number is empty", http.StatusBadRequest)
 		return
 	}
@@ -35,7 +30,7 @@ func Transport(w http.ResponseWriter, req *http.Request) {
 		limit = tmp
 	}
 
-	if err := DB.Select(&cars, limit, "number = ?", number); err != nil {
+	if err := Storage.Select(&cars, limit, "number = ?", number); err != nil {
 		log.Println(err)
 		http.Error(w, "", http.StatusInternalServerError)
 	}
@@ -46,24 +41,23 @@ func Transport(w http.ResponseWriter, req *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	// fmt.Printf("Execution time: %s\n", time.Since(start))
 }
 
 // HealthHandler is a net/http handler for health checks.
 func Health(w http.ResponseWriter, _ *http.Request) {
-	if DB.Healthy() {
+	if Storage.Healthy() {
 		msg := "database is not healthy"
 		http.Error(w, msg, http.StatusServiceUnavailable)
 	}
 }
 
-func Run() {
+func Run(addr string) {
 	http.HandleFunc("/transport", Transport)
 	http.HandleFunc("/health", Health)
 
-	fmt.Println("Listening port 8080")
+	log.Printf("Server is listening %s\n", addr)
 
-	if err := http.ListenAndServe(":8080", http.DefaultServeMux); err != nil {
+	if err := http.ListenAndServe(addr, nil); err != nil {
 		panic(err.Error())
 	}
 }

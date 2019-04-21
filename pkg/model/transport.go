@@ -1,4 +1,4 @@
-package models
+package model
 
 import (
 	"strconv"
@@ -14,8 +14,8 @@ type Transport struct {
 	Date                string `json:"date" db:"date"`
 	DepCode             int    `json:"-" db:"dep_code"`
 	Dep                 string `json:"-" db:"dep"`
-	Brand               string `json:"model" db:"brand"`
-	Model               string `json:"-" db:"model"`
+	Brand               string `json:"" db:"brand"`
+	Model               string `json:"" db:"model"`
 	Year                int    `json:"year" db:"year"`
 	Color               string `json:"color" db:"color"`
 	Kind                string `json:"kind" db:"kind"`
@@ -28,9 +28,9 @@ type Transport struct {
 	Number              string `json:"number" db:"number,notnull"`
 }
 
-// Valid checks whatever transport number valid or not.
+// Valid checks whatever model number valid or not.
 func (transport Transport) Valid() (matched bool) {
-	return transport.Number != "NULL"
+	return transport.Number != ""
 }
 
 // TrimNull returns empty string in case of NULL.
@@ -42,8 +42,8 @@ func TrimNull(s string) string {
 	return s
 }
 
-// NewTransportFromCSV parses CSV line into transport structure.
-func NewTransportFromCSV(record []string) *Transport {
+// NewTransport parses CSV line into model structure.
+func NewTransport(record []string) *Transport {
 	transport := new(Transport)
 
 	transport.Person = record[0]
@@ -56,7 +56,7 @@ func NewTransportFromCSV(record []string) *Transport {
 	transport.Brand = TrimNull(record[7])
 	transport.Model = TrimNull(record[8])
 	transport.Year, _ = strconv.Atoi(record[9])
-	transport.Color = TrimNull(record[9])
+	transport.Color = TrimNull(record[10])
 	transport.Kind = TrimNull(record[11])
 	transport.Body = TrimNull(record[12])
 	transport.Purpose = TrimNull(record[13])

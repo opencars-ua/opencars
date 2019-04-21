@@ -7,12 +7,11 @@ import (
 	"io"
 	"log"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/go-pg/pg"
 	"github.com/opencars/opencars/internal/database"
-	"github.com/opencars/opencars/pkg/models"
+	"github.com/opencars/opencars/pkg/model"
 )
 
 type HandlerCSV struct {
@@ -20,38 +19,38 @@ type HandlerCSV struct {
 	reader *csv.Reader
 }
 
-func (h *HandlerCSV) ReadN(amount int) ([]models.Transport, error) {
-	result := make([]models.Transport, amount)
+func (h *HandlerCSV) ReadN(amount int) ([]model.Transport, error) {
+	result := make([]model.Transport, 0)
 
 	for i := 0; i < amount; i++ {
 		record, err := h.reader.Read()
 		if err == io.EOF {
-			return result, io.EOF
+			return result, err
 		}
 
 		if err != nil {
-			fmt.Println("Something went wrong, while reading!")
-			continue
+			return nil, err
 		}
 
-		car := models.NewTransportFromCSV(record)
-		if !car.Valid() {
-			continue
+		car := model.NewTransport(record)
+		if car.Valid() {
+			result = append(result, *car)
 		}
-
-		result[i] = *car
 	}
 
 	return result, nil
 }
 
+var (
+	path = flag.String("path", "", "Path to XSV file")
+)
+
 func Run() {
 	start := time.Now()
 
-	path := flag.String("path", "", "Path to xsv file")
 	flag.Parse()
 
-	if strings.TrimSpace(*path) == "" {
+	if *path == "" {
 		panic("empty path")
 	}
 
@@ -84,10 +83,10 @@ func Run() {
 
 		err = db.Insert(&cars)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		} else {
 			createdCars += N
-			fmt.Println(createdCars)
+			log.Println(createdCars)
 		}
 
 		if readErr == io.EOF {
