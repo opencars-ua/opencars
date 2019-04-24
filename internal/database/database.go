@@ -22,7 +22,7 @@ type Adapter interface {
 }
 
 func CreateSchema(db *pg.DB) error {
-	err := db.CreateTable((*model.Transport)(nil), &orm.CreateTableOptions{
+	err := db.CreateTable((*model.Operation)(nil), &orm.CreateTableOptions{
 		IfNotExists: true,
 	})
 
@@ -30,8 +30,8 @@ func CreateSchema(db *pg.DB) error {
 		return err
 	}
 
-	_, err = db.Model((*model.Transport)(nil)).Exec(
-		"CREATE INDEX IF NOT EXISTS NUMBERS ON transports USING btree (number)",
+	_, err = db.Model((*model.Operation)(nil)).Exec(
+		"CREATE INDEX IF NOT EXISTS NUMBERS ON operations USING btree (number)",
 	)
 
 	if err != nil {
