@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/go-pg/pg"
+
 	"github.com/opencars/opencars/internal/database"
 	"github.com/opencars/opencars/internal/http"
 )

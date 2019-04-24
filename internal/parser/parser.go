@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-pg/pg"
+
 	"github.com/opencars/opencars/internal/database"
 	"github.com/opencars/opencars/pkg/model"
 )
@@ -19,8 +20,8 @@ type HandlerCSV struct {
 	reader *csv.Reader
 }
 
-func (h *HandlerCSV) ReadN(amount int) ([]model.Transport, error) {
-	result := make([]model.Transport, 0)
+func (h *HandlerCSV) ReadN(amount int) ([]model.Operation, error) {
+	result := make([]model.Operation, 0)
 
 	for i := 0; i < amount; i++ {
 		record, err := h.reader.Read()
@@ -32,7 +33,7 @@ func (h *HandlerCSV) ReadN(amount int) ([]model.Transport, error) {
 			return nil, err
 		}
 
-		car := model.NewTransport(record)
+		car := model.NewOperation(record)
 		if car.Valid() {
 			result = append(result, *car)
 		}

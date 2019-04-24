@@ -2,39 +2,41 @@ package model
 
 import (
 	"strconv"
+	"strings"
 )
 
-// Transport represents SQL table and JSON object.
-type Transport struct {
-	ID                  int    `json:"id" db:"id,pk"`
-	Person              string `json:"-" db:"person"`
-	RegistrationAddress string `json:"registration_address" db:"registration_address"`
-	RegistrationCode    int    `json:"registration_code" db:"registration_code"`
-	Registration        string `json:"registration" db:"registration"`
-	Date                string `json:"date" db:"date"`
-	DepCode             int    `json:"-" db:"dep_code"`
-	Dep                 string `json:"-" db:"dep"`
-	Brand               string `json:"" db:"brand"`
-	Model               string `json:"" db:"model"`
-	Year                int    `json:"year" db:"year"`
-	Color               string `json:"color" db:"color"`
-	Kind                string `json:"kind" db:"kind"`
-	Body                string `json:"body" db:"body"`
-	Purpose             string `json:"-" db:"purpose"`
-	Fuel                string `json:"fuel" db:"fuel"`
-	Capacity            int    `json:"capacity" db:"capacity"`
-	OwnWeight           int    `json:"own_weight" db:"own_weight"`
-	TotalWeight         int    `json:"-" db:"total_weight"`
-	Number              string `json:"number" db:"number,notnull"`
+// Operation represents public registrations of transport.
+type Operation struct {
+	ID          int    `json:"-" db:"id,pk"`
+	Person      string `json:"person" db:"person"`
+	Address     string `json:"address" db:"reg_addr_koatuu"`
+	Code        int    `json:"operation" db:"code"`
+	Description string `json:"description" db:"description"`
+	Date        string `json:"date" db:"date"`
+	OfficeID    int    `json:"office_id" db:"office_id"`
+	OfficeName  string `json:"office_name" db:"office_name"`
+	Brand       string `json:"brand" db:"brand" `
+	Model       string `json:"model" db:"model"`
+	Year        int    `json:"year" db:"year"`
+	Color       string `json:"color" db:"color"`
+	Kind        string `json:"kind" db:"kind"`
+	Body        string `json:"body" db:"body"`
+	Purpose     string `json:"purpose" db:"purpose"`
+	Fuel        string `json:"fuel" db:"fuel"`
+	Capacity    int    `json:"capacity" db:"capacity"`
+	Weight      int    `json:"weight" db:"weight"`
+	Number      string `json:"number" db:"number,notnull"`
 }
 
 // Valid checks whatever model number valid or not.
-func (transport Transport) Valid() (matched bool) {
-	return transport.Number != ""
+func (op Operation) Valid() (matched bool) {
+	return op.Number != ""
 }
 
 // TrimNull returns empty string in case of NULL.
 func TrimNull(s string) string {
+	s = strings.TrimSpace(s)
+
 	if s == "NULL" {
 		return ""
 	}
@@ -42,29 +44,45 @@ func TrimNull(s string) string {
 	return s
 }
 
-// NewTransport parses CSV line into model structure.
-func NewTransport(record []string) *Transport {
-	transport := new(Transport)
+func (op *Operation) fixBrand() {
+	op.Brand = strings.TrimSpace(op.Brand)
+	op.Brand = strings.TrimSuffix(op.Brand, op.Model)
+	op.Brand = strings.TrimSpace(op.Brand)
+}
 
-	transport.Person = record[0]
-	transport.RegistrationAddress = record[1]
-	transport.RegistrationCode, _ = strconv.Atoi(record[2])
-	transport.Registration = record[3]
-	transport.Date = record[4]
-	transport.DepCode, _ = strconv.Atoi(record[5])
-	transport.Dep = TrimNull(record[6])
-	transport.Brand = TrimNull(record[7])
-	transport.Model = TrimNull(record[8])
-	transport.Year, _ = strconv.Atoi(record[9])
-	transport.Color = TrimNull(record[10])
-	transport.Kind = TrimNull(record[11])
-	transport.Body = TrimNull(record[12])
-	transport.Purpose = TrimNull(record[13])
-	transport.Fuel = TrimNull(record[14])
-	transport.Capacity, _ = strconv.Atoi(record[15])
-	transport.OwnWeight, _ = strconv.Atoi(record[16])
-	transport.TotalWeight, _ = strconv.Atoi(record[17])
-	transport.Number = TrimNull(record[18])
+func (op *Operation) fixDescription() {
+	op.Description = strings.TrimSpace(op.Description)
+	op.Description = strings.TrimPrefix(op.Description, strconv.Itoa(op.Code))
+	op.Description = strings.TrimSpace(op.Description)
+	op.Description = strings.TrimPrefix(op.Description, "-")
+	op.Description = strings.TrimSpace(op.Description)
+}
 
-	return transport
+// NewOperation parses CSV line into operation model.
+func NewOperation(record []string) *Operation {
+	o := new(Operation)
+
+	o.Person = record[0]
+	o.Address = strings.TrimSpace(record[1])
+	o.Code, _ = strconv.Atoi(record[2])
+	o.Description = strings.ToUpper(strings.TrimSpace(record[3]))
+	o.Date = strings.TrimSpace(record[4])
+	o.OfficeID, _ = strconv.Atoi(record[5])
+	o.OfficeName = TrimNull(record[6])
+	o.Brand = TrimNull(record[7])
+	o.Model = TrimNull(record[8])
+	o.Year, _ = strconv.Atoi(record[9])
+	o.Color = TrimNull(record[10])
+	o.Kind = TrimNull(record[11])
+	o.Body = TrimNull(record[12])
+	o.Purpose = TrimNull(record[13])
+	o.Fuel = TrimNull(record[14])
+	o.Capacity, _ = strconv.Atoi(record[15])
+	o.Weight, _ = strconv.Atoi(record[16])
+	o.Number = TrimNull(record[18])
+
+	o.fixBrand()
+	o.fixDescription()
+
+	return o
 }

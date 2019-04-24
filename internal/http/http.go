@@ -1,13 +1,15 @@
 package http
 
 import (
-	"github.com/json-iterator/go"
-	"github.com/opencars/opencars/internal/database"
-	"github.com/opencars/opencars/pkg/model"
-	"github.com/opencars/opencars/pkg/translator"
 	"log"
 	"net/http"
 	"strconv"
+
+	jsoniter "github.com/json-iterator/go"
+
+	"github.com/opencars/opencars/internal/database"
+	"github.com/opencars/opencars/pkg/model"
+	"github.com/opencars/opencars/pkg/translator"
 )
 
 var (
@@ -17,7 +19,7 @@ var (
 )
 
 func Transport(w http.ResponseWriter, req *http.Request) {
-	cars := make([]model.Transport, 0)
+	cars := make([]model.Operation, 0)
 	number := translator.ToUA(req.FormValue("number"))
 	limit := 1
 
