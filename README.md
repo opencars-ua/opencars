@@ -36,20 +36,24 @@ $ http localhost:8080/transport?number="BA2927BT"
 ```json
 [
     {
-        "body": "ХЕТЧБЕК-В",
-        "capacity": 1598,
-        "color": "СІРИЙ",
-        "date": "2018-09-26",
+        "address": "8036100000",
+        "body": "СЕДАН-B",
+        "brand": "MERCEDES-BENZ",
+        "capacity": 2987,
+        "color": "ЧОРНИЙ",
+        "date": "2018-10-18",
+        "description": "ПЕРВИННА РЕЄСТРАЦІЯ ЛЕГКОВИХ ТЗ, ЯКІ ВВЕЗЕНО З-ЗА КОРДОНУ",
         "fuel": "ДИЗЕЛЬНЕ ПАЛИВО",
-        "id": 8665886,
         "kind": "ЛЕГКОВИЙ",
-        "model": "AUDI A1",
-        "number": "ВА2927ВТ",
-        "own_weight": 1284,
-        "registration": "172 - ПЕРВИННА РЕЄСТРАЦІЯ ЛЕГКОВИХ ТЗ, ЯКІ ВВЕЗЕНО З-ЗА КОРДОНУ",
-        "registration_address": "3510600000",
-        "registration_code": 172,
-        "year": 2011
+        "model": "S 350 D",
+        "number": "АА1234ВР",
+        "office_id": 8046,
+        "office_name": "ТСЦ 8046",
+        "operation": 172,
+        "person": "P",
+        "purpose": "ЗАГАЛЬНИЙ",
+        "weight": 1825,
+        "year": 2017
     }
 ]
 ```
