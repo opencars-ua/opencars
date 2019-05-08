@@ -1,7 +1,7 @@
 module github.com/opencars/opencars
 
 require (
-	github.com/go-pg/pg v8.0.3+incompatible
+	github.com/go-pg/pg v8.0.4+incompatible
 	github.com/jinzhu/inflection v0.0.0-20180308033659-04140366298a // indirect
 	github.com/json-iterator/go v1.1.5
 	github.com/kr/pretty v0.1.0 // indirect

@@ -9,19 +9,23 @@ import (
 	"os"
 	"time"
 
-	"github.com/go-pg/pg"
-
 	"github.com/opencars/opencars/internal/database"
 	"github.com/opencars/opencars/pkg/model"
 )
 
+const (
+	Mappers = 1
+	Reducers = 1
+	Shufflers = 1
+	BatchSize = 20000
+)
+
 type HandlerCSV struct {
-	db     *pg.DB
 	reader *csv.Reader
 }
 
-func (h *HandlerCSV) ReadN(amount int) ([]model.Operation, error) {
-	result := make([]model.Operation, 0)
+func (h *HandlerCSV) ReadN(amount int) ([][]string, error) {
+	result := make([][]string, 0)
 
 	for i := 0; i < amount; i++ {
 		record, err := h.reader.Read()
@@ -33,10 +37,7 @@ func (h *HandlerCSV) ReadN(amount int) ([]model.Operation, error) {
 			return nil, err
 		}
 
-		car := model.NewOperation(record)
-		if car.Valid() {
-			result = append(result, *car)
-		}
+		result = append(result, record)
 	}
 
 	return result, nil
@@ -45,6 +46,76 @@ func (h *HandlerCSV) ReadN(amount int) ([]model.Operation, error) {
 var (
 	path = flag.String("path", "", "Path to XSV file")
 )
+
+func shuffler(input chan model.Operation, output chan []model.Operation) {
+	operations := make([]model.Operation, 0, BatchSize)
+
+	for {
+		operation, open := <- input
+		if !open {
+			if len(operations) != 0 {
+				output <- operations
+			}
+
+			return
+		}
+
+		if len(operations) < BatchSize {
+			operations = append(operations, operation)
+			continue
+		}
+
+		output <- operations
+		operations = operations[:0]
+	}
+}
+
+func mapper(input chan []string, output chan model.Operation) {
+	for {
+		msg, opened := <- input
+		if !opened {
+			return
+		}
+
+		output <- *model.NewOperation(msg)
+	}
+}
+
+func reducer(input chan []model.Operation, output chan struct{}) {
+	db := database.Must(database.DB())
+	defer db.Close()
+
+	for {
+		operations, open := <-input
+		if !open {
+			output <- struct{}{}
+			return
+		}
+
+		if err := db.Insert(&operations); err != nil {
+			log.Println(len(operations))
+			log.Println(err)
+		}
+	}
+}
+
+func mapperDispatcher(handler HandlerCSV, output chan []string, red chan model.Operation) {
+	for {
+		msgs, err := handler.ReadN(10000)
+		if err == nil || err == io.EOF {
+			for _, msg := range msgs {
+				output <- msg
+			}
+		}
+
+		if err != nil {
+			close(output)
+			time.Sleep(time.Second)
+			close(red)
+			return
+		}
+	}
+}
 
 func Run() {
 	start := time.Now()
@@ -62,37 +133,34 @@ func Run() {
 
 	csvReader := csv.NewReader(file)
 	csvReader.Comma = ';'
-	createdCars := 0
-
-	db := database.Must(database.DB())
-	defer db.Close()
 
 	// Skip header line.
 	if _, err := csvReader.Read(); err != nil {
 		log.Println(err.Error())
 	}
 
-	handler := HandlerCSV{
-		db:     db,
-		reader: csvReader,
+	handler := HandlerCSV{reader: csvReader}
+	rows := make(chan []string, 100000)
+	operations := make(chan model.Operation, 100000)
+	batches := make(chan []model.Operation, 100)
+	ready := make(chan struct{}, Reducers)
+
+	for i := 0; i < Reducers; i++ {
+		go reducer(batches, ready)
 	}
 
-	N := 10000
+	for i := 0; i < Shufflers; i++ {
+		go shuffler(operations, batches)
+	}
 
-	for {
-		cars, readErr := handler.ReadN(N)
+	for i := 0; i < Mappers; i++ {
+		go mapper(rows, operations)
+	}
 
-		err = db.Insert(&cars)
-		if err != nil {
-			log.Println(err)
-		} else {
-			createdCars += N
-			log.Println(createdCars)
-		}
+	go mapperDispatcher(handler, rows, operations)
 
-		if readErr == io.EOF {
-			break
-		}
+	for i := 0; i < Reducers; i++ {
+		<- ready
 	}
 
 	fmt.Println("Execution time: ", time.Since(start))
