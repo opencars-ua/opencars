@@ -42,25 +42,25 @@ func Transport(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
 	if number == "" {
-		SendError(w,http.StatusBadRequest, "number is empty")
+		SendError(w, http.StatusBadRequest, "number is empty")
 		return
 	}
 
 	if tmp, err := strconv.Atoi(req.FormValue("limit")); err == nil {
 		limit = tmp
 	} else if req.FormValue("limit") != "" {
-		SendError(w,http.StatusBadRequest, "limit is not valid")
+		SendError(w, http.StatusBadRequest, "limit is not valid")
 		return
 	}
 
 	if err := Storage.Select(&cars, limit, "number = ?", number); err != nil {
-		SendError(w,http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		SendError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		log.Println(err)
 		return
 	}
 
 	if err := json.NewEncoder(w).Encode(cars); err != nil {
-		SendError(w,http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		SendError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		log.Println(err)
 		return
 	}

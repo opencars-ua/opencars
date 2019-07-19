@@ -14,10 +14,10 @@ import (
 )
 
 const (
-	Mappers = 1
-	Reducers = 1
-	Shufflers = 1
-	BatchSize = 20000
+	mappers   = 10
+	reducers  = 10
+	shufflers = 10 // Dont change. It closes channel.
+	batchSize = 5000
 )
 
 type HandlerCSV struct {
@@ -44,37 +44,39 @@ func (h *HandlerCSV) ReadN(amount int) ([][]string, error) {
 }
 
 var (
-	path = flag.String("path", "", "Path to XSV file")
+	path = flag.String("path", "", "Path to CSV file")
 )
 
-func shuffler(input chan model.Operation, output chan []model.Operation) {
-	operations := make([]model.Operation, 0, BatchSize)
+func shuffler(input chan model.Operation, output chan []model.Operation, ready chan struct{}) {
+	operations := make([]model.Operation, 0, batchSize)
 
 	for {
-		operation, open := <- input
-		if !open {
+		operation, ok := <-input
+		if !ok {
 			if len(operations) != 0 {
 				output <- operations
+				ready <- struct{}{}
 			}
-
-			return
+			break
 		}
 
-		if len(operations) < BatchSize {
+		if len(operations) < batchSize {
 			operations = append(operations, operation)
 			continue
 		}
 
 		output <- operations
-		operations = operations[:0]
+		// TODO: Find anouther way to find too much memory allocation.
+		operations = make([]model.Operation, 0, batchSize)
 	}
 }
 
-func mapper(input chan []string, output chan model.Operation) {
+func mapper(input chan []string, output chan model.Operation, ready chan struct{}) {
 	for {
-		msg, opened := <- input
-		if !opened {
-			return
+		msg, ok := <-input
+		if !ok {
+			ready <- struct{}{}
+			break
 		}
 
 		output <- *model.NewOperation(msg)
@@ -86,49 +88,56 @@ func reducer(input chan []model.Operation, output chan struct{}) {
 	defer db.Close()
 
 	for {
-		operations, open := <-input
-		if !open {
+		operations, ok := <-input
+		if !ok {
 			output <- struct{}{}
-			return
+			break
 		}
 
 		if err := db.Insert(&operations); err != nil {
-			log.Println(len(operations))
-			log.Println(err)
+			log.Fatal(err)
 		}
+
+		log.Printf("Done: %d\n", len(operations))
 	}
 }
 
-func mapperDispatcher(handler HandlerCSV, output chan []string, red chan model.Operation) {
+func mapperDispatcher(handler HandlerCSV, output chan []string) {
 	for {
-		msgs, err := handler.ReadN(10000)
+		msgs, err := handler.ReadN(5000)
+
 		if err == nil || err == io.EOF {
 			for _, msg := range msgs {
 				output <- msg
 			}
 		}
 
-		if err != nil {
+		if err == io.EOF {
 			close(output)
-			time.Sleep(time.Second)
-			close(red)
-			return
+			break
+		}
+
+		if err != nil {
+			log.Println(err)
+			close(output)
+			break
 		}
 	}
 }
 
 func Run() {
+	flag.Parse()
 	start := time.Now()
 
-	flag.Parse()
-
 	if *path == "" {
-		panic("empty path")
+		flag.Usage()
+		return
 	}
 
 	file, err := os.Open(*path)
 	if err != nil {
-		panic(err.Error())
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	csvReader := csv.NewReader(file)
@@ -136,32 +145,53 @@ func Run() {
 
 	// Skip header line.
 	if _, err := csvReader.Read(); err != nil {
-		log.Println(err.Error())
+		log.Panic(err.Error())
 	}
 
 	handler := HandlerCSV{reader: csvReader}
 	rows := make(chan []string, 100000)
 	operations := make(chan model.Operation, 100000)
-	batches := make(chan []model.Operation, 100)
-	ready := make(chan struct{}, Reducers)
+	batches := make(chan []model.Operation, 10000)
 
-	for i := 0; i < Reducers; i++ {
-		go reducer(batches, ready)
+	mappersReady := make(chan struct{}, mappers)
+	shufflersReady := make(chan struct{}, shufflers)
+	reducersReady := make(chan struct{}, reducers)
+
+	for i := 0; i < reducers; i++ {
+		go reducer(batches, reducersReady)
 	}
 
-	for i := 0; i < Shufflers; i++ {
-		go shuffler(operations, batches)
+	for i := 0; i < shufflers; i++ {
+		go shuffler(operations, batches, shufflersReady)
 	}
 
-	for i := 0; i < Mappers; i++ {
-		go mapper(rows, operations)
+	for i := 0; i < mappers; i++ {
+		go mapper(rows, operations, mappersReady)
 	}
 
-	go mapperDispatcher(handler, rows, operations)
+	go mapperDispatcher(handler, rows)
 
-	for i := 0; i < Reducers; i++ {
-		<- ready
+	for i := 0; i < mappers; i++ {
+		<-mappersReady
 	}
 
-	fmt.Println("Execution time: ", time.Since(start))
+	// Close channel.
+	time.Sleep(time.Second)
+	close(operations)
+
+	// Wait for shufflers.
+	for i := 0; i < shufflers; i++ {
+		<-shufflersReady
+	}
+
+	// Close channel.
+	time.Sleep(time.Second)
+	close(batches)
+
+	// Wait for reducers.
+	for i := 0; i < reducers; i++ {
+		<-reducersReady
+	}
+
+	log.Println("Execution time: ", time.Since(start))
 }

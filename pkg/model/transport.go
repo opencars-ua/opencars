@@ -7,25 +7,25 @@ import (
 
 // Operation represents public registrations of transport.
 type Operation struct {
-	ID          int    `json:"-" db:"id,pk"`
-	Person      string `json:"person" db:"person"`
-	Address     string `json:"address" db:"reg_addr_koatuu"`
-	Code        int    `json:"operation" db:"code"`
-	Description string `json:"description" db:"description"`
-	Date        string `json:"date" db:"date"`
-	OfficeID    int    `json:"office_id" db:"office_id"`
-	OfficeName  string `json:"office_name" db:"office_name"`
-	Brand       string `json:"brand" db:"brand" `
-	Model       string `json:"model" db:"model"`
-	Year        int    `json:"year" db:"year"`
-	Color       string `json:"color" db:"color"`
-	Kind        string `json:"kind" db:"kind"`
-	Body        string `json:"body" db:"body"`
-	Purpose     string `json:"purpose" db:"purpose"`
-	Fuel        string `json:"fuel" db:"fuel"`
-	Capacity    int    `json:"capacity" db:"capacity"`
-	Weight      int    `json:"weight" db:"weight"`
-	Number      string `json:"number" db:"number,notnull"`
+	ID          int    `json:"-" sql:"id,pk"`
+	Person      string `json:"person" sql:"person"`
+	Address     string `json:"address" sql:"reg_addr_koatuu"`
+	Code        int    `json:"operation" sql:"code"`
+	Description string `json:"description" sql:"description"`
+	Date        string `json:"date" sql:"date"`
+	OfficeID    int    `json:"office_id" sql:"office_id"`
+	OfficeName  string `json:"office_name" sql:"office_name"`
+	Brand       string `json:"brand" sql:"brand" `
+	Model       string `json:"model" sql:"model"`
+	Year        int    `json:"year" sql:"year"`
+	Color       string `json:"color" sql:"color"`
+	Kind        string `json:"kind" sql:"kind"`
+	Body        string `json:"body" sql:"body"`
+	Purpose     string `json:"purpose" sql:"purpose"`
+	Fuel        string `json:"fuel" sql:"fuel"`
+	Capacity    int    `json:"capacity" sql:"capacity"`
+	Weight      int    `json:"weight" sql:"weight"`
+	Number      string `json:"number" sql:"number,notnull"`
 }
 
 // Valid checks whatever model number valid or not.
