@@ -1,16 +1,15 @@
 package http
 
 import (
+	"errors"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 
-	"github.com/json-iterator/go"
+	"github.com/gorilla/schema"
+	jsoniter "github.com/json-iterator/go"
 
 	"github.com/opencars/opencars/internal/database"
-	"github.com/opencars/opencars/pkg/model"
-	"github.com/opencars/opencars/pkg/translator"
 )
 
 // Error is error JSON format with error description.
@@ -24,7 +23,17 @@ var (
 	json    = jsoniter.ConfigFastest
 )
 
-func SendError(w http.ResponseWriter, code int, msg string) {
+var (
+	ErrInvalidNumber = errors.New("invalid number")
+	ErrInvalidCode   = errors.New("invalid code")
+	ErrRemoteBroken  = errors.New("remote server is not available")
+
+	ErrInternal = errors.New(http.StatusText(http.StatusInternalServerError))
+)
+
+var decoder = schema.NewDecoder()
+
+func sendError(w http.ResponseWriter, code int, msg string) {
 	w.WriteHeader(code)
 
 	if err := json.NewEncoder(w).Encode(Error{msg}); err != nil {
@@ -32,53 +41,46 @@ func SendError(w http.ResponseWriter, code int, msg string) {
 	}
 }
 
-func Transport(w http.ResponseWriter, req *http.Request) {
-	cars := make([]model.Operation, 0)
-	number := translator.ToUA(req.FormValue("number"))
-	limit := 1
+func Server(handler http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("Server", "opencars")
+		w.Header().Set("Connection", "keep-alive")
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
-	w.Header().Set("Server", "opencars")
-	w.Header().Set("Connection", "keep-alive")
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		handler.ServeHTTP(w, req)
+	}
+}
 
-	if number == "" {
-		SendError(w, http.StatusBadRequest, "number is empty")
-		return
+type Validator interface {
+	Validate(r *http.Request) error
+}
+
+func decodeAndValidate(r *http.Request, v Validator) error {
+	if err := decoder.Decode(v, r.URL.Query()); err != nil {
+		return err
 	}
 
-	if tmp, err := strconv.Atoi(req.FormValue("limit")); err == nil {
-		limit = tmp
-	} else if req.FormValue("limit") != "" {
-		SendError(w, http.StatusBadRequest, "limit is not valid")
-		return
-	}
-
-	if err := Storage.Select(&cars, limit, "number = ?", number); err != nil {
-		SendError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		log.Println(err)
-		return
-	}
-
-	if err := json.NewEncoder(w).Encode(cars); err != nil {
-		SendError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		log.Println(err)
-		return
-	}
+	return v.Validate(r)
 }
 
 // HealthHandler is a net/http handler for health checks.
 func Health(w http.ResponseWriter, _ *http.Request) {
-	if Storage.Healthy() {
+	if !Storage.Healthy() {
 		msg := "database is not healthy"
 		http.Error(w, msg, http.StatusServiceUnavailable)
 	}
 }
 
-func Run(addr string) {
+// Run register routes and starts web server.
+func Run(addr, uri string) {
 	log.Printf("Server is listening %s\n", addr)
 
+	vehicle := http.NewServeMux()
+	vehicle.Handle("/registrations", NewRegsHandler(uri))
+	vehicle.HandleFunc("/operations", Operations)
+
 	router := http.NewServeMux()
-	router.HandleFunc("/transport", Transport)
+	router.Handle("/vehicle/", http.StripPrefix("/vehicle", Server(vehicle)))
 	router.HandleFunc("/health", Health)
 
 	server := &http.Server{

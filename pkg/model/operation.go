@@ -26,6 +26,7 @@ type Operation struct {
 	Capacity    int    `json:"capacity" sql:"capacity"`
 	Weight      int    `json:"weight" sql:"weight"`
 	Number      string `json:"number" sql:"number,notnull"`
+	VIN         string `json:"vin,omitempty" sql:"vin"`
 }
 
 // Valid checks whatever model number valid or not.

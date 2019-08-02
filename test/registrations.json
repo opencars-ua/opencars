@@ -1,0 +1,22 @@
+[
+  {
+    "brand": "MERCEDES-BENZ",
+    "capacity": "2148",
+    "color": "БІЛИЙ",
+    "dFirstReg": "2009-04-28",
+    "dReg": "2018-09-27",
+    "fuel": "ДИЗЕЛЬНЕ ПАЛИВО",
+    "kind": "ВАНТАЖНИЙ ФУРГОН",
+    "makeYear": "2004",
+    "model": "SPRINTER 413 CDI",
+    "nDoc": "200455",
+    "nRegNew": "АЕ0533ІТ",
+    "nSeating": "3",
+    "nStanding": null,
+    "ownWeight": "2100",
+    "rankCategory": "C1",
+    "sDoc": "СХІ",
+    "totalWeight": "3500",
+    "vin": "WDB6114681P386772"
+  }
+]
