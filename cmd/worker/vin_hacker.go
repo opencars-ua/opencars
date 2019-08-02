@@ -9,7 +9,7 @@ import (
 	"github.com/opencars/opencars/internal/http"
 )
 
-// Adapter implements interface Adapter from database	 package.
+// Adapter implements interface Adapter from database package.
 type Adapter struct {
 	db *pg.DB
 }
@@ -56,8 +56,6 @@ func (adapter *Adapter) Healthy() bool {
 
 func main() {
 	db := database.Must(database.DB())
-
 	http.Storage = NewAdapter(db)
-
-	http.Run(":8080", os.Getenv("REGS_BASE_URL"))
+	http.VINHacker(os.Getenv("REGS_BASE_URL"))
 }

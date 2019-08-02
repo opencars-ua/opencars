@@ -13,6 +13,8 @@ import (
 // Database interface makes handler testable.
 type Adapter interface {
 	Healthy() bool
+	Update(model interface{}) error
+	Insert(model interface{}) error
 	Select(
 		model interface{},
 		limit int,
@@ -21,21 +23,41 @@ type Adapter interface {
 	) error
 }
 
+// TODO: Make this func clear.
 func CreateSchema(db *pg.DB) error {
-	err := db.CreateTable((*model.Operation)(nil), &orm.CreateTableOptions{
+	tables := []interface{}{
+		(*model.Operation)(nil), (*model.Registration)(nil),
+	}
+
+	for _, table := range tables {
+		err := db.CreateTable(table, &orm.CreateTableOptions{
+			IfNotExists: true,
+		})
+
+		if err != nil {
+			return err
+		}
+	}
+
+	err := db.CreateTable((*model.Registration)(nil), &orm.CreateTableOptions{
 		IfNotExists: true,
 	})
-
 	if err != nil {
 		return err
 	}
 
-	_, err = db.Model((*model.Operation)(nil)).Exec(
+	queries := []string{
 		"CREATE INDEX IF NOT EXISTS NUMBERS ON operations USING btree (number)",
-	)
+		"CREATE INDEX IF NOT EXISTS ops_vin_codes ON operations USING btree (vin)",
+		"CREATE INDEX IF NOT EXISTS reg_numbers ON registrations USING btree (number)",
+		"CREATE INDEX IF NOT EXISTS reg_vin_codes ON registrations USING btree (vin)",
+		"CREATE INDEX IF NOT EXISTS reg_codes ON registrations USING btree (code)",
+	}
 
-	if err != nil {
-		return err
+	for _, query := range queries {
+		if _, err = db.Exec(query); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -53,6 +75,7 @@ func DB() (*pg.DB, error) {
 		port = os.Getenv("DATABASE_PORT")
 	}
 
+	// TODO: Move secrets to toml configuration file.
 	db := pg.Connect(&pg.Options{
 		Addr:     fmt.Sprintf("%s:%s", host, port),
 		User:     "postgres",
