@@ -46,7 +46,7 @@ func RegFromHSC(obj *hsc.Registration) *Registration {
 	r.Number = obj.NRegNew
 	r.Code = obj.SDoc + obj.NDoc
 	r.Category = obj.RankCategory
-	r.VIN = obj.Vin
+	r.VIN = obj.VIN
 
 	r.Capacity, _ = strconv.Atoi(obj.Capacity)
 	r.Year, _ = strconv.Atoi(obj.MakeYear)

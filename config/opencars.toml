@@ -1,0 +1,18 @@
+[database]
+network = "tcp"
+host = "localhost"
+port = 5432
+username = "postgres"
+password = "postgres"
+database = "opencars"
+max_retries = 0
+pool = 10
+
+[hsc]
+host = "http://api.hsc.gov.ua"
+enabled = true
+prefixes = ["AAE", "ACC", "CAE", "CAT", "CXI", "CXK", "CXM", "CXH", "CXO", "CXT", "CXX"]
+
+[api]
+host = "localhost"
+port = 8080

@@ -14,15 +14,16 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o /go/bin/server ./cmd/opencars/main.go
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o /go/bin/server ./cmd/server/main.go
 
 FROM alpine
 
 RUN apk update && apk upgrade && apk add curl
 
-COPY --from=build /go/bin/server /app/server
-
 WORKDIR /app
+
+COPY --from=build /go/bin/server /server
+COPY ./config /config
 
 EXPOSE 8080
 

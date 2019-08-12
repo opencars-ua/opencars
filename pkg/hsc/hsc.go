@@ -25,17 +25,19 @@ type Registration struct {
 	RankCategory string `json:"rankCategory"`
 	SDoc         string `json:"sDoc"`
 	TotalWeight  string `json:"totalWeight"`
-	Vin          string `json:"vin"`
+	VIN          string `json:"vin"`
 }
 
 type API struct {
 	baseUrl string
 }
 
-func New(baseUrl string) *API {
-	return &API{
-		baseUrl: baseUrl,
-	}
+func New(uri string) *API {
+	api := new(API)
+
+	api.baseUrl = uri
+
+	return api
 }
 
 func (api *API) VehiclePassport(code string) ([]Registration, error) {
@@ -49,8 +51,15 @@ func (api *API) VehiclePassport(code string) ([]Registration, error) {
 		return nil, err
 	}
 
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("hsc: failed with http status %d", resp.StatusCode)
+	}
+
 	info := make([]Registration, 0)
-	if err := json.NewDecoder(resp.Body).Decode(&info); err != nil {
+
+	err = json.NewDecoder(resp.Body).Decode(&info)
+	resp.Body.Close()
+	if err != nil {
 		return nil, err
 	}
 

@@ -25,7 +25,7 @@ $ cat cars.sql | psql -U postgres
 Run the server
 
 ```sh
-$ go run cmd/opencars/main.go
+$ go run cmd/server/main.go
 ```
 
 ## API
@@ -54,7 +54,8 @@ $ http localhost:8080/transport?number="АА9359РС"
         "person": "P",
         "purpose": "ЗАГАЛЬНИЙ",
         "weight": 2485,
-        "year": 2016
+        "year": 2016,
+        "vin": "5YJXCCE40GF010543"
     }
 ]
 ```

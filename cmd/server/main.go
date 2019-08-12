@@ -1,15 +1,17 @@
 package main
 
 import (
+	"flag"
 	"os"
 
 	"github.com/go-pg/pg"
 
-	"github.com/opencars/opencars/internal/database"
+	"github.com/opencars/opencars/internal/config"
 	"github.com/opencars/opencars/internal/http"
+	"github.com/opencars/opencars/internal/storage"
 )
 
-// Adapter implements interface Adapter from database package.
+// Adapter implements interface Adapter from storage package.
 type Adapter struct {
 	db *pg.DB
 }
@@ -54,8 +56,32 @@ func (adapter *Adapter) Healthy() bool {
 	return err != nil
 }
 
+var (
+	path = flag.String("config", "./config/opencars.toml", "Path to configuration file")
+)
+
 func main() {
-	db := database.Must(database.DB())
+	flag.Parse()
+
+	// Load configuration.
+	config, err := config.New(*path)
+	if err != nil {
+		panic(err)
+	}
+
+	// Create database connection.
+	db, err := storage.New(config)
+	if err != nil {
+		panic(err)
+	}
+
+	// Initialise database connection.
+	err = storage.Migrate(db)
+	if err != nil {
+		panic(err)
+	}
+
+	// Run web server.
 	http.Storage = NewAdapter(db)
-	http.VINHacker(os.Getenv("REGS_BASE_URL"))
+	http.Run(config.API.Address(), os.Getenv("REGS_BASE_URL"))
 }

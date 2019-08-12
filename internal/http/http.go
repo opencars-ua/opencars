@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/schema"
 	jsoniter "github.com/json-iterator/go"
 
-	"github.com/opencars/opencars/internal/database"
+	"github.com/opencars/opencars/internal/storage"
 )
 
 // Error is error JSON format with error description.
@@ -19,8 +19,8 @@ type Error struct {
 
 var (
 	// Storage is an instance of Database Interface.
-	Storage database.Adapter
-	json    = jsoniter.ConfigFastest
+	Storage storage.Adapter = nil
+	json                    = jsoniter.ConfigFastest
 )
 
 var (
