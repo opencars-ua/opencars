@@ -36,7 +36,10 @@ jobs:
 
       - run:
           name: Build Project Binary
-          command: "go build cmd/opencars/main.go"
+          command: |
+            go build -o ./bin/server ./cmd/server/main.go
+            go build -o ./bin/parser ./cmd/./parser/main.go
+            go build -o ./bin/vin_hacker ./cmd/vin_hacker/main.go
 
   release:
     docker:

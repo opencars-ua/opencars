@@ -25,17 +25,19 @@ type Registration struct {
 	RankCategory string `json:"rankCategory"`
 	SDoc         string `json:"sDoc"`
 	TotalWeight  string `json:"totalWeight"`
-	Vin          string `json:"vin"`
+	VIN          string `json:"vin"`
 }
 
 type API struct {
 	baseUrl string
 }
 
-func New(baseUrl string) *API {
-	return &API{
-		baseUrl: baseUrl,
-	}
+func New(uri string) *API {
+	api := new(API)
+
+	api.baseUrl = uri
+
+	return api
 }
 
 func (api *API) VehiclePassport(code string) ([]Registration, error) {

@@ -3,71 +3,114 @@ package http
 import (
 	"fmt"
 	"log"
-	"math/rand"
-	"time"
+	"sync"
 
 	"github.com/opencars/opencars/pkg/hsc"
 	"github.com/opencars/opencars/pkg/model"
 )
 
-func VINHacker(uri string) {
-	numOfErr := 0
+const (
+	SizeOfBulkInsert = 1000
+	SizeOfBulkFetch  = 100
+	Total            = 100000
+)
 
-	rand.Seed(time.Now().UTC().UnixNano())
+type Event struct {
+	Registrations []model.Registration
+	Processed     uint32
+}
 
-	prefixes := [...]string{
-		"CXI", "CAT", "CXX", "CXH", "CXM", "CXT", "AAC", "CAE", "AAE",
+func NewEvent(
+	registrations []model.Registration,
+	processed uint32,
+) *Event {
+	return &Event{
+		Registrations: registrations,
+		Processed:     processed,
 	}
+}
 
+func Worker(
+	wg *sync.WaitGroup,
+	from, to uint32,
+	events chan *Event,
+	prefix, uri string,
+) {
 	sdk := hsc.New(uri)
 
-	for {
-		prefix := prefixes[rand.Intn(len(prefixes))]
-		digits := rand.Intn(1000000)
-		code := fmt.Sprintf("%s%06d", prefix, digits)
-
-		regs := make([]model.Registration, 0)
-		err := Storage.Select(&regs, 1, "code = ?", code)
-		if err != nil {
-			log.Println(err.Error())
+	regs := make([]model.Registration, 0)
+	for i := from; i < to; i++ {
+		if len(regs) >= SizeOfBulkFetch {
+			events <- NewEvent(regs, uint32(len(regs)))
+			regs = make([]model.Registration, 0)
 		}
 
-		// TODO: Fix issue with duplicates in database!
-		if len(regs) > 0 {
-			continue
-		}
-
+		code := fmt.Sprintf("%s%06d", prefix, i)
 		hscRegs, err := sdk.VehiclePassport(code)
 		if err != nil {
-			numOfErr++
+			log.Printf("code: %s. Remote error: %s\n", code, err)
 			continue
 		}
 
-		for _, result := range hscRegs {
-			var operations []model.Operation
-
-			err := Storage.Select(&operations, 1, "number = ?", result.NRegNew)
-			if err != nil {
-				log.Printf("Select operations: %s\n", err)
-				continue
-			}
-
-			// Save VIN code to the database.
-			for i := range operations {
-				operations[i].VIN = result.Vin
-				if err := Storage.Update(&operations); err != nil {
-					continue
-				}
-			}
-
-			// Insert into database.
-			obj := model.RegFromHSC(&result)
-			if err := Storage.Insert(obj); err != nil {
-				log.Printf("Insert registrations: %s\n", err)
-				continue
-			}
-
-			log.Println(result.SDoc, result.NDoc, result.NRegNew, result.Vin)
+		for _, hscReg := range hscRegs {
+			obj := model.RegFromHSC(&hscReg)
+			regs = append(regs, *obj)
 		}
 	}
+
+	if len(regs) != 0 {
+		events <- NewEvent(regs, uint32(len(regs)))
+	}
+
+	wg.Done()
+}
+
+func Batch(events chan *Event) {
+	// Insert collects 50K and then insert all of them at once.
+	collected := make([]model.Registration, 0, SizeOfBulkInsert*2)
+	inserted, processed := 0, uint32(0)
+
+	for {
+		event, ok := <-events
+		processed += event.Processed
+
+		collected = append(collected, event.Registrations...)
+		if len(collected) < SizeOfBulkInsert && ok {
+			continue
+		}
+
+		if err := Storage.Insert(&collected); err != nil {
+			log.Fatal(err)
+		}
+		// Increment number of inserted rows.
+		inserted += len(collected)
+		// Clean up.
+		collected = collected[:0]
+
+		log.Printf("Processed: %d/%d\n", processed, Total)
+		log.Printf("Inserted: %d\n", inserted)
+
+		if !ok {
+			break
+		}
+	}
+}
+
+func VINHacker(prefix, uri string, threads uint16) {
+	events := make(chan *Event, threads*2)
+	numPerThread := 1000000 / uint32(threads)
+	wg := sync.WaitGroup{}
+
+	for i := uint32(0); i < uint32(threads); i++ {
+		from := i * numPerThread
+		to := from + numPerThread
+		wg.Add(1)
+		go Worker(&wg, from, to, events, prefix, uri)
+	}
+
+	go Batch(events)
+	go Batch(events)
+
+	wg.Wait()
+	close(events)
 }

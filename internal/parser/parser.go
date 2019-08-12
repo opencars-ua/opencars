@@ -7,16 +7,20 @@ import (
 	"io"
 	"log"
 	"os"
+	"sync"
 	"time"
 
-	"github.com/opencars/opencars/internal/database"
+	"github.com/go-pg/pg"
+	"github.com/opencars/opencars/internal/config"
+	"github.com/opencars/opencars/internal/storage"
+
 	"github.com/opencars/opencars/pkg/model"
 )
 
 const (
 	mappers   = 10
 	reducers  = 10
-	shufflers = 10 // Dont change. It closes channel.
+	shufflers = 10 // Don't change. It closes channel.
 	batchSize = 5000
 )
 
@@ -44,10 +48,11 @@ func (h *HandlerCSV) ReadN(amount int) ([][]string, error) {
 }
 
 var (
-	path = flag.String("path", "", "Path to CSV file")
+	sourcePath = flag.String("csv", "", "Path to CSV file")
+	configPath = flag.String("config", "./config/opencars.toml", "Path to configuration file")
 )
 
-func shuffler(input chan model.Operation, output chan []model.Operation, ready chan struct{}) {
+func shuffler(wg *sync.WaitGroup, input chan model.Operation, output chan []model.Operation) {
 	operations := make([]model.Operation, 0, batchSize)
 
 	for {
@@ -55,8 +60,8 @@ func shuffler(input chan model.Operation, output chan []model.Operation, ready c
 		if !ok {
 			if len(operations) != 0 {
 				output <- operations
-				ready <- struct{}{}
 			}
+			wg.Done()
 			break
 		}
 
@@ -66,16 +71,17 @@ func shuffler(input chan model.Operation, output chan []model.Operation, ready c
 		}
 
 		output <- operations
-		// TODO: Find anouther way to find too much memory allocation.
+
+		// TODO: Find another way to find too much memory allocation.
 		operations = make([]model.Operation, 0, batchSize)
 	}
 }
 
-func mapper(input chan []string, output chan model.Operation, ready chan struct{}) {
+func mapper(wg *sync.WaitGroup, input chan []string, output chan model.Operation) {
 	for {
 		msg, ok := <-input
 		if !ok {
-			ready <- struct{}{}
+			wg.Done()
 			break
 		}
 
@@ -83,14 +89,11 @@ func mapper(input chan []string, output chan model.Operation, ready chan struct{
 	}
 }
 
-func reducer(input chan []model.Operation, output chan struct{}) {
-	db := database.Must(database.DB())
-	defer db.Close()
-
+func reducer(wg *sync.WaitGroup, db *pg.DB, input chan []model.Operation) {
 	for {
 		operations, ok := <-input
 		if !ok {
-			output <- struct{}{}
+			wg.Done()
 			break
 		}
 
@@ -129,12 +132,25 @@ func Run() {
 	flag.Parse()
 	start := time.Now()
 
-	if *path == "" {
+	conf, err := config.New(*configPath)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	db, err := storage.New(conf)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	storage.Migrate(db)
+
+	if *sourcePath == "" {
 		flag.Usage()
 		return
 	}
 
-	file, err := os.Open(*path)
+	file, err := os.Open(*sourcePath)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -153,45 +169,42 @@ func Run() {
 	operations := make(chan model.Operation, 100000)
 	batches := make(chan []model.Operation, 10000)
 
-	mappersReady := make(chan struct{}, mappers)
-	shufflersReady := make(chan struct{}, shufflers)
-	reducersReady := make(chan struct{}, reducers)
+	mapperWg := sync.WaitGroup{}
+	shufflersWg := sync.WaitGroup{}
+	reducersWg := sync.WaitGroup{}
 
 	for i := 0; i < reducers; i++ {
-		go reducer(batches, reducersReady)
+		reducersWg.Add(1)
+		go reducer(&reducersWg, db, batches)
 	}
 
 	for i := 0; i < shufflers; i++ {
-		go shuffler(operations, batches, shufflersReady)
+		shufflersWg.Add(1)
+		go shuffler(&shufflersWg, operations, batches)
 	}
 
 	for i := 0; i < mappers; i++ {
-		go mapper(rows, operations, mappersReady)
+		mapperWg.Add(1)
+		go mapper(&mapperWg, rows, operations)
 	}
 
 	go mapperDispatcher(handler, rows)
 
-	for i := 0; i < mappers; i++ {
-		<-mappersReady
-	}
+	mapperWg.Wait()
 
 	// Close channel.
 	time.Sleep(time.Second)
 	close(operations)
 
-	// Wait for shufflers.
-	for i := 0; i < shufflers; i++ {
-		<-shufflersReady
-	}
+	shufflersWg.Wait()
 
 	// Close channel.
 	time.Sleep(time.Second)
 	close(batches)
 
+	time.Sleep(time.Second)
 	// Wait for reducers.
-	for i := 0; i < reducers; i++ {
-		<-reducersReady
-	}
+	reducersWg.Wait()
 
 	log.Println("Execution time: ", time.Since(start))
 }
