@@ -39,6 +39,7 @@ func TestRegsHandler_ServeHTTP(t *testing.T) {
 				}
 			}),
 		)
+		defer server.Close()
 
 		handler := NewRegsHandler(server.URL)
 		rr := httptest.NewRecorder()
@@ -52,8 +53,6 @@ func TestRegsHandler_ServeHTTP(t *testing.T) {
 		if err := json.NewEncoder(rr.Body).Encode(&expected); err != nil {
 			t.Error(err)
 		}
-
-		server.Close()
 	})
 
 	t.Run("remote server is not available", func(t *testing.T) {
@@ -62,6 +61,7 @@ func TestRegsHandler_ServeHTTP(t *testing.T) {
 				http.Error(w, "", http.StatusServiceUnavailable)
 			}),
 		)
+		defer server.Close()
 
 		handler := NewRegsHandler(server.URL)
 		handler.ServeHTTP(rr, req)
@@ -74,8 +74,6 @@ func TestRegsHandler_ServeHTTP(t *testing.T) {
 		if rr.Body.String() != expected {
 			t.Errorf("got %v, expected %v", rr.Body.String(), expected)
 		}
-
-		server.Close()
 	})
 }
 

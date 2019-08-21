@@ -11,28 +11,26 @@ import (
 
 var (
 	registrationsPath = "../../test/registrations.json"
-	registrationsData []byte
+	registrationsData string
 	registrations     []Registration
 )
 
 func TestVehiclePassport(t *testing.T) {
-	// Create fake server with same payload.
-	s := httptest.NewServer(
+	server := httptest.NewServer(
 		http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
-				fmt.Fprintln(w, registrationsData)
+				fmt.Fprintln(w, string(registrationsData))
 			},
 		),
 	)
+	defer server.Close()
 
-	api := New(s.URL)
+	api := New(server.URL)
 
 	arr, err := api.VehiclePassport("АА9359РС")
 	if err != nil {
 		t.Fail()
 	}
-
-	fmt.Println()
 
 	if arr[0] != registrations[0] {
 		t.Fail()
@@ -52,7 +50,8 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
-	registrationsData = data
+	registrationsData = string(data)
+
 	if err := json.Unmarshal(data, &registrations); err != nil {
 		fmt.Fprintln(os.Stderr, "Failed to parse JSON")
 		os.Exit(1)

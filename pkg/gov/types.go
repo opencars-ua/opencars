@@ -1,7 +1,10 @@
 package gov
 
 import (
-"encoding/json"
+	"encoding/json"
+	"fmt"
+	"strings"
+	"time"
 )
 
 /// ----------- Response -----------
@@ -12,13 +15,30 @@ type Response struct {
 	Result  json.RawMessage `json:"result"`
 }
 
-/// ----------- Shared -----------
-
-//
-//
-//
-
 /// ----------- Package -----------
+
+type Time struct {
+	time.Time
+}
+
+const TimeFormat = "2006-01-02T15:04:05.999999"
+
+func (ct *Time) UnmarshalJSON(b []byte) (err error) {
+	s := strings.Trim(string(b), "\"")
+	if s == "null" {
+		ct.Time = time.Time{}
+		return
+	}
+	ct.Time, err = time.Parse(TimeFormat, s)
+	return
+}
+
+func (ct *Time) MarshalJSON() ([]byte, error) {
+	if ct.Time.UnixNano() == (time.Time{}).UnixNano() {
+		return []byte("null"), nil
+	}
+	return []byte(fmt.Sprintf("\"%s\"", ct.Time.Format(TimeFormat))), nil
+}
 
 type PackageResource struct {
 	PackageID       string `json:"package_id"`
@@ -30,7 +50,7 @@ type PackageResource struct {
 	Hash            string `json:"hash"`
 	Description     string `json:"description"`
 	Format          string `json:"format"`
-	LastModified    string `json:"last_modified"`
+	LastModified    Time   `json:"last_modified"`
 	URLType         string `json:"url_type"`
 	MIMEType        string `json:"mimetype"`
 	Name            string `json:"name"`
@@ -89,38 +109,3 @@ type Package struct {
 	Title                          string            `json:"title"`
 	RevisionID                     string            `json:"revision_id"`
 }
-
-/// ----------- Resource -----------
-
-type ResourceRevision struct {
-	MIMEType        string `json:"mimetype"`
-	Name            string `json:"name"`
-	Format          string `json:"format"`
-	URL             string `json:"url"`
-	FileHashSum     string `json:"file_hash_sum"`
-	ResourceCreated string `json:"resource_created"`
-	Size            int    `json:"size"`
-}
-
-type Resource struct {
-	PackageID         string             `json:"package_id"`
-	DataStoreActive   bool               `json:"datastore_active"`
-	ID                string             `json:"id"`
-	Size              int                `json:"size"`
-	FileHashSum       string             `json:"file_hash_sum"`
-	State             string             `json:"state"`
-	Hash              string             `json:"hash"`
-	Description       string             `json:"description"`
-	Format            string             `json:"format"`
-	LastModified      string             `json:"last_modified"`
-	ResourceRevisions []ResourceRevision `json:"resource_revisions"`
-	URLType           string             `json:"url_type"`
-	MIMEType          string             `json:"mimetype"`
-	Name              string             `json:"nam e"`
-	Created           string             `json:"created"`
-	URL               string             `json:"url"`
-	Position          int                `json:"position"`
-	RevisionID        string             `json:"revision_id"`
-}
-
-/// ----------- Helpers -----------

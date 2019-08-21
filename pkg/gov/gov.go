@@ -30,7 +30,7 @@ func (c *Client) get(path string) (*Response, error) {
 
 	resp, err := c.http.Get(url)
 	if err != nil {
-
+		return nil, err
 	}
 
 	JSON := new(Response)
@@ -49,20 +49,10 @@ func (c *Client) DataPackage(id string) (*Package, error) {
 	}
 
 	pkg := new(Package)
-	json.Unmarshal(res.Result, pkg)
 
-	return pkg, nil
-}
-
-func (c *Client) DataResource(id string) (*Resource, error) {
-	path := fmt.Sprintf("/api/3/action/resource_show?id=%s", id)
-	res, err := c.get(path)
-	if err != nil {
+	if err := json.Unmarshal(res.Result, pkg); err != nil {
 		return nil, err
 	}
 
-	resource := new(Resource)
-	json.Unmarshal(res.Result, resource)
-
-	return resource, nil
+	return pkg, nil
 }

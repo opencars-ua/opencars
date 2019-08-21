@@ -76,7 +76,10 @@ func main() {
 	}
 
 	// Initialise database connection.
-	storage.Migrate(db)
+	err = storage.Migrate(db)
+	if err != nil {
+		panic(err)
+	}
 
 	// Run web server.
 	http.Storage = NewAdapter(db)

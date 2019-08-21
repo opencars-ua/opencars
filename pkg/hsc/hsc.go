@@ -51,8 +51,15 @@ func (api *API) VehiclePassport(code string) ([]Registration, error) {
 		return nil, err
 	}
 
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("hsc: failed with http status %d", resp.StatusCode)
+	}
+
 	info := make([]Registration, 0)
-	if err := json.NewDecoder(resp.Body).Decode(&info); err != nil {
+
+	err = json.NewDecoder(resp.Body).Decode(&info)
+	resp.Body.Close()
+	if err != nil {
 		return nil, err
 	}
 
