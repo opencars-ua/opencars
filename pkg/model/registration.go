@@ -28,7 +28,7 @@ type Registration struct {
 	VIN         string `json:"vin"          sql:"vin"`
 }
 
-// NewOperation parses CSV line into operation model.
+// RegFromHSC creates new Registration from specified hsc.Registration.
 func RegFromHSC(obj *hsc.Registration) *Registration {
 	r := new(Registration)
 

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/gorilla/schema"
-	jsoniter "github.com/json-iterator/go"
+	"github.com/json-iterator/go"
 
 	"github.com/opencars/opencars/internal/storage"
 )
@@ -18,16 +18,20 @@ type Error struct {
 }
 
 var (
-	// Base is an instance of Database Interface.
-	Storage storage.Base = nil
-	json                 = jsoniter.ConfigFastest
+	// Storage is an instance of storage.Base{} Interface.
+	Storage storage.Base
+	json    = jsoniter.ConfigFastest
 )
 
 var (
+	// ErrInvalidNumber is an error for notifying about number invalidity.
 	ErrInvalidNumber = errors.New("invalid number")
-	ErrInvalidCode   = errors.New("invalid code")
-	ErrRemoteBroken  = errors.New("remote server is not available")
-	ErrInternal      = errors.New(http.StatusText(http.StatusInternalServerError))
+	// ErrInvalidCode is an error for notifying about code invalidity.
+	ErrInvalidCode = errors.New("invalid code")
+	// ErrRemoteBroken is an error for notifying about remote problems.
+	ErrRemoteBroken = errors.New("remote server is not available")
+	// ErrInternal is an error for notifying about internal problems.
+	ErrInternal = errors.New(http.StatusText(http.StatusInternalServerError))
 )
 
 var decoder = schema.NewDecoder()
@@ -40,6 +44,8 @@ func sendError(w http.ResponseWriter, code int, msg string) {
 	}
 }
 
+// Server is a main server middleware.
+// Adds application headers.
 func Server(handler http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Server", "opencars")
@@ -50,6 +56,7 @@ func Server(handler http.Handler) http.HandlerFunc {
 	}
 }
 
+// Validator validates request.
 type Validator interface {
 	Validate(r *http.Request) error
 }
@@ -70,7 +77,7 @@ func health(w http.ResponseWriter, _ *http.Request) {
 	}
 }
 
-// Run register routes and starts web server.
+// Run registers routes and starts web server.
 func Run(addr, uri string) {
 	log.Printf("Server is listening %s\n", addr)
 
