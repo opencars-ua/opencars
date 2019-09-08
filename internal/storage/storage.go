@@ -65,7 +65,7 @@ func New(config *config.TOML) (*pg.DB, error) {
 		Password:   config.Database.Password,
 		Database:   config.Database.Name,
 		PoolSize:   config.Database.Pool,
-		MaxRetries: config.Database.Max_retries,
+		MaxRetries: config.Database.MaxRetries,
 		Network:    config.Database.Network,
 	})
 
