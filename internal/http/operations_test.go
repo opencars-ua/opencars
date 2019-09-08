@@ -18,7 +18,7 @@ func TestOperations(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(Operations)
+	handler := http.HandlerFunc(operations)
 	handler.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
@@ -41,7 +41,7 @@ func BenchmarkOperations(b *testing.B) {
 	}
 
 	recorder := httptest.NewRecorder()
-	handler := http.HandlerFunc(Operations)
+	handler := http.HandlerFunc(operations)
 
 	b.ResetTimer()
 	b.ReportAllocs()

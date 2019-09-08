@@ -24,11 +24,11 @@ const (
 	batchSize = 5000
 )
 
-type HandlerCSV struct {
+type handlerCSV struct {
 	reader *csv.Reader
 }
 
-func (h *HandlerCSV) ReadN(amount int) ([][]string, error) {
+func (h *handlerCSV) readN(amount int) ([][]string, error) {
 	result := make([][]string, 0)
 
 	for i := 0; i < amount; i++ {
@@ -105,9 +105,9 @@ func reducer(wg *sync.WaitGroup, db *pg.DB, input chan []model.Operation) {
 	}
 }
 
-func mapperDispatcher(handler HandlerCSV, output chan []string) {
+func mapperDispatcher(handler handlerCSV, output chan []string) {
 	for {
-		msgs, err := handler.ReadN(5000)
+		msgs, err := handler.readN(5000)
 
 		if err == nil || err == io.EOF {
 			for _, msg := range msgs {
@@ -128,6 +128,7 @@ func mapperDispatcher(handler HandlerCSV, output chan []string) {
 	}
 }
 
+// Run starts process of data parsing.
 func Run() {
 	flag.Parse()
 	start := time.Now()
@@ -169,7 +170,7 @@ func Run() {
 		log.Panic(err.Error())
 	}
 
-	handler := HandlerCSV{reader: csvReader}
+	handler := handlerCSV{reader: csvReader}
 	rows := make(chan []string, 100000)
 	operations := make(chan model.Operation, 100000)
 	batches := make(chan []model.Operation, 10000)

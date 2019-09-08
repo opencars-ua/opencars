@@ -41,7 +41,7 @@ func TestRegsHandler_ServeHTTP(t *testing.T) {
 		)
 		defer server.Close()
 
-		handler := NewRegsHandler(server.URL)
+		handler := newRegsHandler(server.URL)
 		rr := httptest.NewRecorder()
 		handler.ServeHTTP(rr, req)
 
@@ -63,7 +63,7 @@ func TestRegsHandler_ServeHTTP(t *testing.T) {
 		)
 		defer server.Close()
 
-		handler := NewRegsHandler(server.URL)
+		handler := newRegsHandler(server.URL)
 		handler.ServeHTTP(rr, req)
 
 		if status := rr.Code; status != http.StatusServiceUnavailable {
@@ -102,7 +102,7 @@ func BenchmarkRegsHandler_ServeHTTP(b *testing.B) {
 	defer server.Close()
 
 	rr := httptest.NewRecorder()
-	handler := NewRegsHandler(server.URL)
+	handler := newRegsHandler(server.URL)
 
 	b.ResetTimer()
 	b.ReportAllocs()

@@ -18,17 +18,16 @@ type Error struct {
 }
 
 var (
-	// Storage is an instance of Database Interface.
-	Storage storage.Adapter = nil
-	json                    = jsoniter.ConfigFastest
+	// Base is an instance of Database Interface.
+	Storage storage.Base = nil
+	json                 = jsoniter.ConfigFastest
 )
 
 var (
 	ErrInvalidNumber = errors.New("invalid number")
 	ErrInvalidCode   = errors.New("invalid code")
 	ErrRemoteBroken  = errors.New("remote server is not available")
-
-	ErrInternal = errors.New(http.StatusText(http.StatusInternalServerError))
+	ErrInternal      = errors.New(http.StatusText(http.StatusInternalServerError))
 )
 
 var decoder = schema.NewDecoder()
@@ -64,7 +63,7 @@ func decodeAndValidate(r *http.Request, v Validator) error {
 }
 
 // HealthHandler is a net/http handler for health checks.
-func Health(w http.ResponseWriter, _ *http.Request) {
+func health(w http.ResponseWriter, _ *http.Request) {
 	if !Storage.Healthy() {
 		msg := "database is not healthy"
 		http.Error(w, msg, http.StatusServiceUnavailable)
@@ -76,12 +75,12 @@ func Run(addr, uri string) {
 	log.Printf("Server is listening %s\n", addr)
 
 	vehicle := http.NewServeMux()
-	vehicle.Handle("/registrations", NewRegsHandler(uri))
-	vehicle.HandleFunc("/operations", Operations)
+	vehicle.Handle("/registrations", newRegsHandler(uri))
+	vehicle.HandleFunc("/operations", operations)
 
 	router := http.NewServeMux()
 	router.Handle("/vehicle/", http.StripPrefix("/vehicle", Server(vehicle)))
-	router.HandleFunc("/health", Health)
+	router.HandleFunc("/health", health)
 
 	server := &http.Server{
 		Addr:         addr,

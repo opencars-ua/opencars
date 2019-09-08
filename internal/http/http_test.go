@@ -41,7 +41,7 @@ func TestHealth(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(Health)
+	handler := http.HandlerFunc(health)
 
 	handler.ServeHTTP(rr, req)
 
@@ -56,6 +56,8 @@ func TestHealth(t *testing.T) {
 
 func TestMain(m *testing.M) {
 	Storage = new(Test)
+
 	code := m.Run()
+
 	os.Exit(code)
 }
