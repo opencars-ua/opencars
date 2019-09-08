@@ -27,14 +27,14 @@ func (adapter *Adapter) Select(
 	return query.Order("id ASC").Limit(limit).Select()
 }
 
-// Select returns set of objects searched by SQL SELECT.
+// Update changes state of existing model.
 func (adapter *Adapter) Update(
 	model interface{},
 ) error {
 	return adapter.db.Update(model)
 }
 
-// Select returns set of objects searched by SQL SELECT.
+// Insert creates new record in the storage.
 func (adapter *Adapter) Insert(
 	model interface{},
 ) error {
@@ -42,7 +42,7 @@ func (adapter *Adapter) Insert(
 	return err
 }
 
-// Healthy performs application health check.
+// Healthy performs storage health check.
 func (adapter *Adapter) Healthy() bool {
 	_, err := adapter.db.Exec("SELECT 1")
 	return err != nil

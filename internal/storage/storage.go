@@ -8,7 +8,7 @@ import (
 	"github.com/opencars/opencars/pkg/model"
 )
 
-// Database interface makes handler testable.
+// Base interface makes handlers testable.
 type Base interface {
 	Healthy() bool
 	Update(model interface{}) error
@@ -21,7 +21,7 @@ type Base interface {
 	) error
 }
 
-// TODO: Make this func clear.
+// Migrate updates database schema to new version.
 func Migrate(db *pg.DB) error {
 	tables := []interface{}{
 		(*model.Operation)(nil),
