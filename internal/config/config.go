@@ -23,7 +23,7 @@ type Database struct {
 	User        string `toml:"username"`
 	Password    string `toml:"password"`
 	Name        string `toml:"database"`
-	Max_retries int    `toml:"max_retries"`
+	MaxRetries int    `toml:"max_retries"`
 	Pool        int    `toml:"pool"`
 }
 
