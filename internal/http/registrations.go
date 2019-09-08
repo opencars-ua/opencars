@@ -24,7 +24,7 @@ func (t regInfo) Validate(r *http.Request) error {
 
 type regsHandler struct{ *hsc.API }
 
-func NewRegsHandler(baseUrl string) *regsHandler {
+func newRegsHandler(baseUrl string) *regsHandler {
 	return &regsHandler{hsc.New(baseUrl)}
 }
 

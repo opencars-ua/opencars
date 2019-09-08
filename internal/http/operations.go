@@ -25,7 +25,7 @@ func (v *opsPayload) Validate(r *http.Request) error {
 	return nil
 }
 
-func Operations(w http.ResponseWriter, r *http.Request) {
+func operations(w http.ResponseWriter, r *http.Request) {
 	payload := new(opsPayload)
 	if err := decodeAndValidate(r, payload); err != nil {
 		sendError(w, http.StatusInternalServerError, err.Error())

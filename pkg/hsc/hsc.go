@@ -9,6 +9,7 @@ import (
 
 var json = jsoniter.ConfigFastest
 
+// Registration contains details of vehicle registration.
 type Registration struct {
 	Brand        string `json:"brand"`
 	Capacity     string `json:"capacity"`
@@ -28,10 +29,12 @@ type Registration struct {
 	VIN          string `json:"vin"`
 }
 
+// API is wrapper to Head Service Center website.
 type API struct {
 	baseUrl string
 }
 
+// New creates an instance of API wrapper.
 func New(uri string) *API {
 	api := new(API)
 
@@ -40,6 +43,9 @@ func New(uri string) *API {
 	return api
 }
 
+// VehiclePassport sends GET request to Head Service Center.
+// Code is identifier of vehicle registration certificate.
+// Returns array of vehicles registration details.
 func (api *API) VehiclePassport(code string) ([]Registration, error) {
 	uri := fmt.Sprintf(
 		"%s/gateway-edrmvs/api/verification/spr/%s/%s",

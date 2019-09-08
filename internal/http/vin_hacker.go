@@ -10,16 +10,18 @@ import (
 )
 
 const (
-	SizeOfBulkInsert = 1000
-	SizeOfBulkFetch  = 100
-	Total            = 100000
+	sizeOfBulkInsert = 1000
+	sizeOfBulkFetch  = 100
+	total            = 100000
 )
 
+// Event helps decouple logic using golang channels.
 type Event struct {
 	Registrations []model.Registration
 	Processed     uint32
 }
 
+// NewEvent returns new instance of Event.
 func NewEvent(
 	registrations []model.Registration,
 	processed uint32,
@@ -30,7 +32,7 @@ func NewEvent(
 	}
 }
 
-func Worker(
+func worker(
 	wg *sync.WaitGroup,
 	from, to uint32,
 	events chan *Event,
@@ -40,7 +42,7 @@ func Worker(
 
 	regs := make([]model.Registration, 0)
 	for i := from; i < to; i++ {
-		if len(regs) >= SizeOfBulkFetch {
+		if len(regs) >= sizeOfBulkFetch {
 			events <- NewEvent(regs, uint32(len(regs)))
 			regs = make([]model.Registration, 0)
 		}
@@ -65,9 +67,9 @@ func Worker(
 	wg.Done()
 }
 
-func Batch(events chan *Event) {
+func batch(events chan *Event) {
 	// Insert collects 50K and then insert all of them at once.
-	collected := make([]model.Registration, 0, SizeOfBulkInsert*2)
+	collected := make([]model.Registration, 0, sizeOfBulkInsert*2)
 	inserted, processed := 0, uint32(0)
 
 	for {
@@ -75,7 +77,7 @@ func Batch(events chan *Event) {
 		processed += event.Processed
 
 		collected = append(collected, event.Registrations...)
-		if len(collected) < SizeOfBulkInsert && ok {
+		if len(collected) < sizeOfBulkInsert && ok {
 			continue
 		}
 
@@ -87,7 +89,7 @@ func Batch(events chan *Event) {
 		// Clean up.
 		collected = collected[:0]
 
-		log.Printf("Processed: %d/%d\n", processed, Total)
+		log.Printf("Processed: %d/%d\n", processed, total)
 		log.Printf("Inserted: %d\n", inserted)
 
 		if !ok {
@@ -96,6 +98,7 @@ func Batch(events chan *Event) {
 	}
 }
 
+// VINHacker starts process of VIN codes extraction from third-party service.
 func VINHacker(prefix, uri string, threads uint16) {
 	events := make(chan *Event, threads*2)
 	numPerThread := 1000000 / uint32(threads)
@@ -105,11 +108,11 @@ func VINHacker(prefix, uri string, threads uint16) {
 		from := i * numPerThread
 		to := from + numPerThread
 		wg.Add(1)
-		go Worker(&wg, from, to, events, prefix, uri)
+		go worker(&wg, from, to, events, prefix, uri)
 	}
 
-	go Batch(events)
-	go Batch(events)
+	go batch(events)
+	go batch(events)
 
 	wg.Wait()
 	close(events)

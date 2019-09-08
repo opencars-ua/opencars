@@ -9,7 +9,7 @@ import (
 )
 
 // Database interface makes handler testable.
-type Adapter interface {
+type Base interface {
 	Healthy() bool
 	Update(model interface{}) error
 	Insert(model interface{}) error
@@ -58,7 +58,7 @@ func Migrate(db *pg.DB) error {
 }
 
 // New returns newly created database connection.
-func New(config *config.TOML) (*pg.DB, error) {
+func New(config *config.Settings) (*pg.DB, error) {
 	db := pg.Connect(&pg.Options{
 		Addr:       config.Database.Address(),
 		User:       config.Database.User,
