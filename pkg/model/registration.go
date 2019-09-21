@@ -9,21 +9,21 @@ import (
 
 // Registration represents information from vehicle registration document.
 type Registration struct {
-	ID          int    `json:"-"            sql:"id,pk"`
+	ID          int64  `json:"-"            sql:"id,pk"`
 	Brand       string `json:"brand"        sql:"brand"`
-	Capacity    int    `json:"capacity"     sql:"capacity"`
+	Capacity    int32  `json:"capacity"     sql:"capacity"`
 	Color       string `json:"color"        sql:"color"`
 	FirstReg    string `json:"first_reg"    sql:"first_reg"`
 	Date        string `json:"date"         sql:"date"`
 	Fuel        string `json:"fuel"         sql:"fuel"`
 	Kind        string `json:"kind"         sql:"kind"`
 	Body        string `json:"body"         sql:"body"`
-	Year        int    `json:"year"         sql:"year"`
+	Year        int32  `json:"year"         sql:"year"`
 	Model       string `json:"model"        sql:"model"`
 	Code        string `json:"code"         sql:"code"`
 	Number      string `json:"number"       sql:"number"`
-	TotalWeight int    `json:"total_weight" sql:"total_weight"`
-	OwnWeight   int    `json:"own_weight"   sql:"own_weight"`
+	TotalWeight int32  `json:"total_weight" sql:"total_weight"`
+	OwnWeight   int32  `json:"own_weight"   sql:"own_weight"`
 	Category    string `json:"category"     sql:"category"`
 	VIN         string `json:"vin"          sql:"vin"`
 }
@@ -48,10 +48,17 @@ func RegFromHSC(obj *hsc.Registration) *Registration {
 	r.Category = obj.RankCategory
 	r.VIN = obj.VIN
 
-	r.Capacity, _ = strconv.Atoi(obj.Capacity)
-	r.Year, _ = strconv.Atoi(obj.MakeYear)
-	r.TotalWeight, _ = strconv.Atoi(obj.TotalWeight)
-	r.OwnWeight, _ = strconv.Atoi(obj.OwnWeight)
+	capacity, _ := strconv.Atoi(obj.Capacity)
+	r.Capacity = int32(capacity)
+
+	year, _ := strconv.Atoi(obj.MakeYear)
+	r.Year = int32(year)
+
+	totalWeight, _ := strconv.Atoi(obj.MakeYear)
+	r.TotalWeight = int32(totalWeight)
+
+	ownWeight, _ := strconv.Atoi(obj.MakeYear)
+	r.OwnWeight = int32(ownWeight)
 
 	return r
 }
