@@ -60,7 +60,7 @@ $ http localhost:8080/transport?number="АА9359РС"
 ]
 ```
 
-For more information see [documentation](./docs).
+For more information see [documentation](./docs/api.md).
 
 ## Parser
 
