@@ -87,19 +87,25 @@ func (handler *regsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO: We should handle this error.
 	arr, _ := handler.fromDatabase(payload.Code)
 	if len(arr) != 0 {
 		if err := json.NewEncoder(w).Encode(arr); err != nil {
 			sendError(w, http.StatusInternalServerError, ErrInternal.Error())
 			log.Println(err)
-			return
 		}
+		return
 	}
 
 	arr, err := handler.fromRemote(payload.Code)
 	if err != nil {
 		sendError(w, http.StatusServiceUnavailable, ErrRemoteBroken.Error())
 		log.Println(err)
+		return
+	}
+
+	if len(arr) == 0 {
+		sendError(w, http.StatusNotFound, ErrNotFound.Error())
 		return
 	}
 

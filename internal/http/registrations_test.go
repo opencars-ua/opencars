@@ -29,8 +29,6 @@ func TestRegsHandler_ServeHTTP(t *testing.T) {
 		t.Fatal()
 	}
 
-	rr := httptest.NewRecorder()
-
 	t.Run("returns registrations", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
@@ -55,15 +53,32 @@ func TestRegsHandler_ServeHTTP(t *testing.T) {
 		}
 	})
 
-	t.Run("remote server is not available", func(t *testing.T) {
+	t.Run("entity not found", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
-				http.Error(w, "", http.StatusServiceUnavailable)
+				http.Error(w, "", http.StatusNotFound)
 			}),
 		)
 		defer server.Close()
 
+		rr := httptest.NewRecorder()
 		handler := newRegsHandler(server.URL)
+		handler.ServeHTTP(rr, req)
+
+		if status := rr.Code; status != http.StatusNotFound {
+			t.Errorf("got %v, expected %v", status, http.StatusNotFound)
+		}
+
+		expected := "{\"error\":\"not found\"}\n"
+		if rr.Body.String() != expected {
+			t.Errorf("got %v, expected %v", rr.Body.String(), expected)
+		}
+	})
+
+	t.Run("remote server is not available", func(t *testing.T) {
+		handler := newRegsHandler("http://invalid:1234")
+
+		rr := httptest.NewRecorder()
 		handler.ServeHTTP(rr, req)
 
 		if status := rr.Code; status != http.StatusServiceUnavailable {
