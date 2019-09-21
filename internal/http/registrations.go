@@ -82,7 +82,7 @@ func (handler *regsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	payload := new(regInfo)
 
 	if err := decodeAndValidate(r, payload); err != nil {
-		sendError(w, http.StatusInternalServerError, err.Error())
+		sendError(w, http.StatusBadRequest, err.Error())
 		log.Println(err)
 		return
 	}
