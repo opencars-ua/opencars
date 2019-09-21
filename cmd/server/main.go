@@ -2,13 +2,11 @@ package main
 
 import (
 	"flag"
-	"os"
-
-	"github.com/opencars/opencars/pkg/adapter"
 
 	"github.com/opencars/opencars/internal/config"
 	"github.com/opencars/opencars/internal/http"
 	"github.com/opencars/opencars/internal/storage"
+	"github.com/opencars/opencars/pkg/adapter"
 )
 
 var (
@@ -38,5 +36,5 @@ func main() {
 
 	// Run web server.
 	http.Storage = adapter.New(db)
-	http.Run(settings.API.Address(), os.Getenv("REGS_BASE_URL"))
+	http.Run(settings.API.Address(), settings.HSC.URL())
 }

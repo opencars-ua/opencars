@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/gorilla/schema"
-	"github.com/json-iterator/go"
+	jsoniter "github.com/json-iterator/go"
 
 	"github.com/opencars/opencars/internal/storage"
 )
@@ -32,6 +32,8 @@ var (
 	ErrRemoteBroken = errors.New("remote server is not available")
 	// ErrInternal is an error for notifying about internal problems.
 	ErrInternal = errors.New(http.StatusText(http.StatusInternalServerError))
+	// ErrNotFound is an error for notifying that entity does not exist.
+	ErrNotFound = errors.New("not found")
 )
 
 var decoder = schema.NewDecoder()
