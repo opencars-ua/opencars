@@ -10,6 +10,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 
 	"github.com/opencars/opencars/internal/storage"
+	"github.com/opencars/opencars/pkg/version"
 )
 
 // Error is error JSON format with error description.
@@ -84,16 +85,21 @@ func Run(addr, uri string) {
 	log.Printf("Server is listening %s\n", addr)
 
 	vehicle := http.NewServeMux()
+	// GET /vehicle/registrations.
 	vehicle.Handle("/registrations", newRegsHandler(uri))
+	// GET /vehicle/operations.
 	vehicle.HandleFunc("/operations", operations)
 
 	router := http.NewServeMux()
-	router.Handle("/vehicle/", http.StripPrefix("/vehicle", Server(vehicle)))
+	router.Handle("/vehicle/", http.StripPrefix("/vehicle", vehicle))
+	// GET /health.
 	router.HandleFunc("/health", health)
+	// GET /version.
+	router.Handle("/version", version.Handler{})
 
 	server := &http.Server{
 		Addr:         addr,
-		Handler:      router,
+		Handler:      Server(router),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  15 * time.Second,
