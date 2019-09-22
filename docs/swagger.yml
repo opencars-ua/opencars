@@ -1,8 +1,8 @@
 swagger: "2.0"
 info:
   title: OpenCars API
-  description: API для отпримання публічної інформації про транспортні засоби України.
-  version: 0.1.5
+  description: API для отпримання публічної інформації про транспортні засоби України
+  version: 0.1.10
 host: api.opencars.pp.ua
 basePath: /
 schemes:

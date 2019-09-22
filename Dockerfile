@@ -14,7 +14,8 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o /go/bin/server ./cmd/server/main.go
+RUN export VERSION=$(cat VERSION) && \
+  CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags "-X github.com/opencars/opencars/pkg/version.Version=$VERSION" -o /go/bin/server ./cmd/server/main.go
 
 FROM alpine
 
