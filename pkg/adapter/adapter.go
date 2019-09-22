@@ -45,5 +45,5 @@ func (adapter *Adapter) Insert(
 // Healthy performs storage health check.
 func (adapter *Adapter) Healthy() bool {
 	_, err := adapter.db.Exec("SELECT 1")
-	return err != nil
+	return err == nil
 }
