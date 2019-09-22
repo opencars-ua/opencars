@@ -23,7 +23,7 @@ RUN apk update && apk upgrade && apk add curl
 WORKDIR /app
 
 COPY --from=build /go/bin/server ./server
-COPY ./config /config
+COPY ./config ./config
 COPY ./docs /docs
 
 EXPOSE 8080
