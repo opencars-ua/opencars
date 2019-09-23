@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/schema"
 	jsoniter "github.com/json-iterator/go"
+	"github.com/rs/cors"
 
 	"github.com/opencars/opencars/internal/storage"
 	"github.com/opencars/opencars/pkg/version"
@@ -99,7 +100,7 @@ func Run(addr, uri string) {
 
 	server := &http.Server{
 		Addr:         addr,
-		Handler:      Server(router),
+		Handler:      cors.Default().Handler(Server(router)),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  15 * time.Second,
