@@ -2,21 +2,52 @@ swagger: "2.0"
 info:
   title: OpenCars API
   description: API для отпримання публічної інформації про транспортні засоби України
+  contact: support@opencars.pp.ua
   version: 0.1.10
 host: api.opencars.pp.ua
-basePath: /
+basePath: /api/v1/
 schemes:
-  - http
   - https
 consumes:
   - application/json
 produces:
   - application/json
 paths:
+  /vehicle/wanted:
+    get:
+      tags:
+        - Транспорт
+      summary: Чи перебуває транспортний засіб у розшуку
+      description: Перевірка транпорного засобу на наявність у базі розшуку
+      parameters:
+        - name: number
+          in: query
+          required: true
+          type: string
+          description: Реєстраційний номер
+        - name: limit
+          in: query
+          required: false
+          minimum: 1
+          type: integer
+          description: Максимальна кількість операцій
+     produces:
+        - application/json
+      responses:
+        200:
+          description: Список транспортних засобів
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/WantedTransport'
+        400:
+          description: Помилковий запит
+          schema:
+            $ref: '#/definitions/Error'
   /vehicle/operations:
     get:
       tags:
-        - Публічні дані
+        - Транспорт
       summary: Пошук оперіцій за реєстраційним номером
       description: Отримати перелік оперіцій за реєстраційним номером
       parameters:
@@ -35,15 +66,11 @@ paths:
         - application/json
       responses:
         200:
-          description: Список оперіції з номерним знаком
+          description: Список оперіцій з реєстраційним номером
           schema:
             type: array
             items:
               $ref: '#/definitions/Operation'
-        405:
-          description: Помилковий метод
-          schema:
-            $ref: '#/definitions/Error'
         400:
           description: Помилковий запит
           schema:
@@ -51,7 +78,7 @@ paths:
   /vehicle/registrations:
     get:
       tags:
-        - Публічні дані
+        - Транспорт
       summary: Пошук інформації за номером свідоцтва
       description: Отримати інформацію про реєстрацію авто за номером свідоцтва
       parameters:
@@ -73,14 +100,6 @@ paths:
           description: Помилковий запит
           schema:
             $ref: '#/definitions/Error'
-        404:
-          description: Не знайдено
-          schema:
-            $ref: '#/definitions/Error'
-        405:
-          description: Помилковий метод
-          schema:
-            $ref: '#/definitions/Error'
         503:
           description: Ресурс з даними про свідоцтва недоступний
           schema:
@@ -94,6 +113,59 @@ definitions:
         type: string
         description: Опис помилки
         example: "invalid code"
+  # TODO: I need to check that every brand looks like %s - %s (%s). Scanf().
+  WantedTransport:
+    type: object
+    description: Детальна інформація про викдання транспортного засобу
+    properties:
+      id:
+        type: string
+        description:
+        example: "3019226454408970"
+      ovd:
+        type: string
+        description:
+        example: "Шевченківське управління поліції ГУНП в м. Києві"
+      brand:
+        type: string
+        description:
+        example: "Mazda"
+      model:
+        type: string
+        description:
+        example: "CX-5"
+      kind:
+        type: string
+        description:
+        example: "Легковий автотранспорт"
+      color:
+        type: string
+        description:
+        example: "КОРИЧНЕВИЙ"
+      number:
+        type: string
+        description:
+        example: "АІ5322НХ"
+      body_number:
+        type: string
+        description:
+        example: "JM3KE4DY9G0712168"
+      chassis_number:
+        type: string
+        description:
+        example: "Шевченківське управління поліції ГУНП в м. Києві"
+      engine_number:
+        type: string
+        description:
+        example: "PY20646421"
+      theft_date:
+        type: string
+        description:
+        example: "2019-08-07T00:00:00"
+      insert_date:
+        type: string
+        description:
+        example: "2019-08-14T12:37:20"
   Operation:
     type: object
     description: Детальна інформація про операцію з транспортним засобом
@@ -248,5 +320,5 @@ definitions:
         example: 2016
 
 tags:
-- name: Публічні дані
-  description: Загальна інформація що надається без авторизації.
+- name: Транспорт
+  description: Загальна інформація про транспорт.

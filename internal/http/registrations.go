@@ -97,24 +97,21 @@ func (handler *regsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	arr, err := handler.fromRemote(payload.Code)
+	registrations, err := handler.fromRemote(payload.Code)
 	if err != nil {
 		sendError(w, http.StatusServiceUnavailable, ErrRemoteBroken.Error())
 		log.Println(err)
 		return
 	}
 
-	if len(arr) == 0 {
-		sendError(w, http.StatusNotFound, ErrNotFound.Error())
-		return
-	}
-
 	// Save.
-	if err := handler.save(arr); err != nil {
-		log.Printf("can not save registrations: %s\n", err)
+	if len(registrations) != 0 {
+		if err := handler.save(registrations); err != nil {
+			log.Printf("can not save registrations: %s\n", err)
+		}
 	}
 
-	if err := json.NewEncoder(w).Encode(arr); err != nil {
+	if err := json.NewEncoder(w).Encode(registrations); err != nil {
 		sendError(w, http.StatusInternalServerError, ErrInternal.Error())
 		log.Println(err)
 		return

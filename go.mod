@@ -5,6 +5,8 @@ go 1.13
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/go-pg/pg v8.0.4+incompatible
+	github.com/gorilla/handlers v1.4.2
+	github.com/gorilla/mux v1.7.3
 	github.com/gorilla/schema v1.1.0
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.6
