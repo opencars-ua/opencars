@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/opencars/opencars/pkg/model"
-	"github.com/opencars/opencars/pkg/translator"
+	"github.com/opencars/translit"
 )
 
 type opsPayload struct {
@@ -34,7 +34,7 @@ func operations(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cars := make([]model.Operation, 0)
-	number := translator.ToUA(payload.Number)
+	number := translit.ToUA(payload.Number)
 
 	if err := Storage.Select(&cars, payload.Limit, "number = ?", number); err != nil {
 		sendError(w, http.StatusInternalServerError, ErrInternal.Error())
