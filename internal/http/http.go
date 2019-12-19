@@ -2,13 +2,14 @@ package http
 
 import (
 	"errors"
+	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/gorilla/schema"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/rs/cors"
 
 	"github.com/opencars/opencars/internal/storage"
 	"github.com/opencars/opencars/pkg/version"
@@ -85,22 +86,26 @@ func health(w http.ResponseWriter, _ *http.Request) {
 func Run(addr, uri string) {
 	log.Printf("Server is listening %s\n", addr)
 
-	vehicle := http.NewServeMux()
+	router := mux.NewRouter()
+	vehicle := router.PathPrefix("/vehicle/").Methods("GET", "OPTIONS").Subrouter()
 	// GET /vehicle/registrations.
 	vehicle.Handle("/registrations", newRegsHandler(uri))
 	// GET /vehicle/operations.
 	vehicle.HandleFunc("/operations", operations)
 
-	router := http.NewServeMux()
-	router.Handle("/vehicle/", http.StripPrefix("/vehicle", vehicle))
 	// GET /health.
 	router.HandleFunc("/health", health)
 	// GET /version.
 	router.Handle("/version", version.Handler{})
 
+	origins := handlers.AllowedOrigins([]string{"*"})
+	methods := handlers.AllowedMethods([]string{"GET", "POST", "OPTIONS"})
+	headers := handlers.AllowedHeaders([]string{"Api-Key"})
+
+	cors := handlers.CORS(origins, methods, headers)(Server(router))
 	server := &http.Server{
 		Addr:         addr,
-		Handler:      cors.Default().Handler(Server(router)),
+		Handler:      cors,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  15 * time.Second,
