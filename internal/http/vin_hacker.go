@@ -22,10 +22,7 @@ type Event struct {
 }
 
 // NewEvent returns new instance of Event.
-func NewEvent(
-	registrations []model.Registration,
-	processed uint32,
-) *Event {
+func NewEvent(egistrations []model.Registration, processed uint32) *Event {
 	return &Event{
 		Registrations: registrations,
 		Processed:     processed,

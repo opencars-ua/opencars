@@ -2,11 +2,12 @@ package http
 
 import (
 	"errors"
-	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
 
 	"github.com/gorilla/schema"
 	jsoniter "github.com/json-iterator/go"
