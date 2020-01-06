@@ -11,8 +11,6 @@ import (
 var (
 	// Version holds the current version of opencars.
 	Version = "dev"
-	// BuildDate holds the build date of opencars.
-	// BuildDate = "I don't remember exactly"
 )
 
 var json = jsoniter.ConfigFastest
@@ -24,12 +22,10 @@ type Handler struct{}
 func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	v := struct {
 		Version string `json:"version"`
-		// BuildDate string `json:"build_date"`
-		Go string `json:"go"`
+		Go      string `json:"go"`
 	}{
 		Version: Version,
-		// BuildDate: BuildDate,
-		Go: runtime.Version(),
+		Go:      runtime.Version(),
 	}
 
 	if err := json.NewEncoder(w).Encode(v); err != nil {

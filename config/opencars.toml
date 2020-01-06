@@ -10,8 +10,6 @@ pool = 10
 
 [hsc]
 host = "http://api.hsc.gov.ua"
-enabled = true
-prefixes = ["AAE", "ACC", "CAE", "CAT", "CXI", "CXK", "CXM", "CXH", "CXO", "CXT", "CXX"]
 
 [api]
 host = "localhost"

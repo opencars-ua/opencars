@@ -1,5 +1,5 @@
 .PHONY: default all clean
-APPS     := parser server vin_hacker
+APPS     := parser server
 BLDDIR   := bin
 VERSION  := $(shell cat VERSION)
 

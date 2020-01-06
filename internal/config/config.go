@@ -1,8 +1,6 @@
 package config
 
 import (
-	"log"
-	"sort"
 	"strconv"
 
 	"github.com/BurntSushi/toml"
@@ -29,9 +27,7 @@ type Database struct {
 
 // HSC contains configuration details for third-party website.
 type HSC struct {
-	Host     string   `toml:"host"`
-	Enabled  bool     `toml:"enabled"`
-	Prefixes []string `toml:"prefixes"`
+	Host string `toml:"host"`
 }
 
 // API helps configure API host and port.
@@ -59,11 +55,8 @@ func (api *API) Address() string {
 func New(path string) (*Settings, error) {
 	config := new(Settings)
 	if _, err := toml.DecodeFile(path, config); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-
-	// Sort array of strings.
-	sort.Strings(config.HSC.Prefixes)
 
 	return config, nil
 }

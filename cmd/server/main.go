@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 
+	"github.com/opencars/opencars/internal/apiserver"
 	"github.com/opencars/opencars/internal/config"
-	"github.com/opencars/opencars/internal/http"
 	"github.com/opencars/opencars/internal/storage"
 	"github.com/opencars/opencars/pkg/adapter"
 )
@@ -35,6 +35,6 @@ func main() {
 	}
 
 	// Run web server.
-	http.Storage = adapter.New(db)
-	http.Run(settings.API.Address(), settings.HSC.URL())
+	apiserver.Storage = adapter.New(db)
+	apiserver.Run(settings.API.Address(), settings.HSC.URL())
 }
